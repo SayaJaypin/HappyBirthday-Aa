@@ -1,45 +1,12 @@
 "use strict";
 
 /* ============================================================
-   BIRTHDAY GIFT EXPERIENCE
-   Aa, M Gilang Ramadhan
+   BIRTHDAY GIFT
+   CORE APPLICATION
 ============================================================ */
 
 /* ============================================================
-   STATE
-============================================================ */
-
-const state = {
-  pinUnlocked: false,
-  currentScene: "opening",
-  previousScene: null,
-  musicPlaying: false,
-  musicMuted: false,
-  currentPhoto: 1,
-
-  cakeBlown: false,
-
-  math: {
-    question: 0,
-    score: 0,
-    questions: []
-  },
-
-  english: {
-    question: 0,
-    score: 0
-  },
-
-  star: {
-    running: false,
-    score: 0,
-    combo: 0,
-    time: 20
-  }
-};
-
-/* ============================================================
-   DOM HELPERS
+   HELPERS
 ============================================================ */
 
 const $ = (selector, parent = document) =>
@@ -49,305 +16,363 @@ const $$ = (selector, parent = document) =>
   [...parent.querySelectorAll(selector)];
 
 /* ============================================================
-   ELEMENTS
+   DOM
 ============================================================ */
 
-const pinScreen = $("#pinScreen");
-const pinCard = $(".pin-card");
-const pinInput = $("#pinInput");
-const pinButton = $("#pinButton");
-const pinError = $("#pinError");
-const pinDots = $$("#pinDots i");
-
 const app = $("#app");
+
+const pinScreen = $("#pinScreen");
+const pinCard = $("#pinCard");
+const pinDots = $$("#pinDots span");
+const pinKeypad = $("#pinKeypad");
+const pinSubmit = $("#pinSubmit");
+const pinError = $("#pinError");
+
+const topbar = $("#topbar");
+
 const navigation = $("#navigation");
 const menuButton = $("#menuButton");
 const closeMenu = $("#closeMenu");
+const menuBackdrop = $("#menuBackdrop");
+
+const bottomNav = $("#bottomNav");
+const backButton = $("#backButton");
+const nextButton = $("#nextButton");
+
+const sceneName = $("#sceneName");
+const progressBar = $("#progressBar");
 
 const musicButton = $("#musicButton");
-const musicPlayer = $("#musicPlayer");
-const birthdayAudio = $("#birthdayAudio");
-
-const playMusic = $("#playMusic");
-const pauseMusic = $("#pauseMusic");
-const muteMusic = $("#muteMusic");
-const musicStatus = $("#musicStatus");
+const musicPanel = $("#musicPanel");
+const musicToggle = $("#musicToggle");
+const audio = $("#audio");
 const musicProgress = $("#musicProgress");
 
-const sceneContainer = $("#sceneContainer");
 const scenes = $$(".scene");
 
-const giftBox = $("#giftBox");
-const openGift = $("#openGift");
-const giftText = $("#giftText");
-
-const blowCandles = $("#blowCandles");
-const cake = $("#cake");
-const candleStatus = $("#candleStatus");
-const smokeContainer = $("#smokeContainer");
-
-const wishInput = $("#wishInput");
-const wishCount = $("#wishCount");
-const releaseWish = $("#releaseWish");
-const wishSky = $("#wishSky");
-
 /* ============================================================
-   DECORATIONS
-   58 CODE-GENERATED INSTANCES
+   APPLICATION STATE
 ============================================================ */
 
-function createDecorations() {
+const state = {
 
-  const container = $("#decorations");
+  pinUnlocked: false,
 
-  if (!container) return;
+  currentScene: "opening",
 
-  const types = [
-    "dot",
-    "star",
-    "ring",
-    "square",
-    "cross",
-    "line"
-  ];
+  musicPlaying: false,
 
-  const positions = [
-    [6,12],[16,8],[28,15],[42,7],[58,13],[72,9],[87,17],
-    [93,30],[8,33],[19,27],[31,38],[49,30],[65,35],[78,27],
-    [3,52],[14,47],[26,59],[38,51],[53,58],[68,49],[84,56],
-    [96,63],[7,72],[21,67],[34,76],[48,69],[62,78],[79,70],
-    [92,82],[12,89],[29,91],[45,87],[58,94],[74,89],[88,93],
-    [5,23],[23,18],[37,24],[55,20],[70,22],[90,20],
-    [11,42],[29,45],[44,41],[59,45],[76,42],[89,48],
-    [17,60],[40,63],[57,61],[73,62],[95,70],
-    [18,82],[35,84],[52,82],[68,86],[82,79],[95,88]
-  ];
+  musicPanelVisible: false,
 
-  positions.forEach((position, index) => {
+  pin: "",
 
-    const element = document.createElement("span");
+  giftOpened: false,
 
-    const type = types[index % types.length];
+  candlesOff: false,
 
-    element.className = `decor decor-${type}`;
+  wishReleased: false,
 
-    const size = type === "line"
-      ? `${35 + (index % 4) * 15}px`
-      : `${3 + (index % 4)}px`;
+  mathIndex: 0,
+  mathScore: 0,
 
-    element.style.left = `${position[0]}%`;
-    element.style.top = `${position[1]}%`;
-    element.style.setProperty("--size", size);
-    element.style.setProperty(
-      "--duration",
-      `${4 + (index % 6)}s`
-    );
+  englishIndex: 0,
+  englishScore: 0,
 
-    element.style.setProperty(
-      "--rotation",
-      `${-35 + (index % 7) * 12}deg`
-    );
+  starRunning: false,
+  starScore: 0,
+  starTime: 20
 
-    container.appendChild(element);
-  });
-}
-
-createDecorations();
+};
 
 /* ============================================================
-   PIN SYSTEM
+   SCENE ORDER
 ============================================================ */
 
-const CORRECT_PIN = "230226";
+const sceneOrder = [
+  "opening",
+  "birthday",
+  "gift",
+  "letter",
+  "time",
 
-function updatePinDots() {
+  "memory01",
+  "memory02",
+  "memory03",
+  "memory04",
+  "memory05",
+  "memory06",
+  "memory07",
+  "memory08",
 
-  const value = pinInput.value;
+  "thread",
+  "cake",
+  "wish",
 
-  pinDots.forEach((dot, index) => {
-    dot.classList.toggle(
-      "filled",
-      index < value.length
-    );
-  });
-}
+  "games",
+  "math",
+  "star",
+  "english",
 
-function submitPin() {
-
-  const value = pinInput.value.trim();
-
-  if (value === CORRECT_PIN) {
-
-    state.pinUnlocked = true;
-
-    pinError.textContent = "";
-
-    pinDots.forEach(dot => {
-      dot.classList.add("filled");
-    });
-
-    pinCard.style.boxShadow =
-      "0 0 80px rgba(91,145,255,.35)";
-
-    setTimeout(() => {
-
-      pinScreen.classList.add("exit");
-      app.classList.remove("locked");
-
-      playMusicAutomatically();
-
-      setTimeout(() => {
-        pinScreen.remove();
-      }, 850);
-
-    }, 500);
-
-    return;
-  }
-
-  pinError.textContent =
-    "PIN belum tepat. coba lagi.";
-
-  pinCard.classList.remove("error");
-
-  void pinCard.offsetWidth;
-
-  pinCard.classList.add("error");
-
-  pinInput.value = "";
-
-  updatePinDots();
-}
-
-pinInput.addEventListener("input", () => {
-
-  pinInput.value =
-    pinInput.value.replace(/\D/g, "").slice(0, 6);
-
-  updatePinDots();
-
-  if (pinInput.value.length === 6) {
-    submitPin();
-  }
-});
-
-pinButton.addEventListener("click", submitPin);
-
-pinScreen.addEventListener("click", event => {
-
-  if (
-    event.target === pinScreen ||
-    event.target === pinCard ||
-    event.target.closest(".pin-card")
-  ) {
-    pinInput.focus();
-  }
-});
+  "finale"
+];
 
 /* ============================================================
-   SCENE MANAGEMENT
+   SCENE TITLES
 ============================================================ */
 
-function getSceneElement(name) {
-  return document.querySelector(
-    `.scene[data-scene="${name}"]`
-  );
-}
+const sceneTitles = {
 
-function showScene(name, direction = "forward") {
+  opening: "HOME",
+  birthday: "BIRTHDAY",
+  gift: "GIFT",
+  letter: "LETTER",
+  time: "TIME BETWEEN US",
 
-  const nextScene = getSceneElement(name);
+  memory01: "MEMORIES",
+  memory02: "MEMORIES",
+  memory03: "MEMORIES",
+  memory04: "MEMORIES",
+  memory05: "MEMORIES",
+  memory06: "MEMORIES",
+  memory07: "MEMORIES",
+  memory08: "MEMORIES",
 
-  if (!nextScene) return;
+  thread: "LOVE THREAD",
+  cake: "CAKE",
+  wish: "MAKE A WISH",
 
-  const currentScene =
-    getSceneElement(state.currentScene);
+  games: "GAMES",
+  math: "BASIC MATH",
+  star: "STAR RUN",
+  english: "EASY ENGLISH",
 
-  if (currentScene === nextScene) return;
+  finale: "FINALE"
 
-  scenes.forEach(scene => {
-    scene.classList.remove("active", "exit-left");
-  });
-
-  if (currentScene) {
-
-    if (direction === "back") {
-      currentScene.classList.add("exit-left");
-    }
-  }
-
-  state.previousScene = state.currentScene;
-  state.currentScene = name;
-
-  nextScene.classList.add("active");
-
-  updateNavigation();
-
-  closeNavigation();
-
-  window.dispatchEvent(
-    new CustomEvent("scenechange", {
-      detail: {
-        scene: name
-      }
-    })
-  );
-}
-
-function goNext(name) {
-  showScene(name, "forward");
-}
-
-function goBack(name) {
-  showScene(name, "back");
-}
-
-$$(".scene-next").forEach(button => {
-
-  button.addEventListener("click", () => {
-
-    const next = button.dataset.next;
-
-    if (next) {
-      goNext(next);
-    }
-  });
-});
-
-$$(".scene-back").forEach(button => {
-
-  button.addEventListener("click", () => {
-
-    const back = button.dataset.back;
-
-    if (back) {
-      goBack(back);
-    }
-  });
-});
+};
 
 /* ============================================================
    NAVIGATION
 ============================================================ */
 
+function getSceneIndex(name) {
+  return sceneOrder.indexOf(name);
+}
+
+function getCurrentSceneElement() {
+  return $(`.scene[data-scene="${state.currentScene}"]`);
+}
+
+function updateNavigation() {
+
+  const index = getSceneIndex(state.currentScene);
+
+  const total = sceneOrder.length;
+
+  const percentage =
+    ((index + 1) / total) * 100;
+
+  sceneName.textContent =
+    sceneTitles[state.currentScene] || "SCENE";
+
+  progressBar.style.width =
+    `${percentage}%`;
+
+  backButton.disabled =
+    index <= 0;
+
+  nextButton.disabled =
+    index >= total - 1;
+
+  $$(".nav-list button").forEach(button => {
+
+    button.classList.toggle(
+      "active",
+      button.dataset.go === state.currentScene
+    );
+
+  });
+
+}
+
+function navigateTo(name) {
+
+  if (!state.pinUnlocked) return;
+
+  if (!sceneOrder.includes(name)) return;
+
+  if (name === state.currentScene) {
+
+    closeNavigation();
+
+    return;
+  }
+
+  const current =
+    getCurrentSceneElement();
+
+  const next =
+    $(`.scene[data-scene="${name}"]`);
+
+  if (!next) return;
+
+  current.classList.remove("active");
+  current.classList.add("exit-left");
+
+  next.classList.remove("exit-left");
+
+  /*
+   * Force browser to register the state
+   * before activating the next scene.
+   */
+  requestAnimationFrame(() => {
+
+    requestAnimationFrame(() => {
+
+      next.classList.add("active");
+
+    });
+
+  });
+
+  state.currentScene = name;
+
+  updateNavigation();
+
+  closeNavigation();
+
+  /*
+   * Scroll every scene back to top.
+   */
+  const inner =
+    $(".scene-inner", next);
+
+  if (inner) {
+    inner.scrollTop = 0;
+  }
+
+  /*
+   * Start visual systems when required.
+   */
+  if (name === "thread") {
+    startHeartAnimation();
+  }
+
+  if (name === "star") {
+    resetStarGame();
+  }
+
+  /*
+   * Remove exit class after transition.
+   */
+  setTimeout(() => {
+
+    current.classList.remove("exit-left");
+
+  }, 800);
+
+}
+
+/* ============================================================
+   NEXT / BACK
+============================================================ */
+
+function goNext() {
+
+  const index =
+    getSceneIndex(state.currentScene);
+
+  if (index >= sceneOrder.length - 1) return;
+
+  navigateTo(
+    sceneOrder[index + 1]
+  );
+
+}
+
+function goBack() {
+
+  const index =
+    getSceneIndex(state.currentScene);
+
+  if (index <= 0) return;
+
+  navigateTo(
+    sceneOrder[index - 1]
+  );
+
+}
+
+nextButton.addEventListener(
+  "click",
+  goNext
+);
+
+backButton.addEventListener(
+  "click",
+  goBack
+);
+
+$$("[data-next]").forEach(button => {
+
+  button.addEventListener(
+    "click",
+    () => navigateTo(button.dataset.next)
+  );
+
+});
+
+$$("[data-go]").forEach(button => {
+
+  button.addEventListener(
+    "click",
+    () => navigateTo(button.dataset.go)
+  );
+
+});
+
+document.addEventListener(
+  "keydown",
+  event => {
+
+    if (!state.pinUnlocked) return;
+
+    if (
+      event.key === "ArrowRight"
+    ) {
+      goNext();
+    }
+
+    if (
+      event.key === "ArrowLeft"
+    ) {
+      goBack();
+    }
+
+    if (
+      event.key === "Escape"
+    ) {
+      closeNavigation();
+    }
+
+  }
+);
+
+/* ============================================================
+   MENU
+============================================================ */
+
 function openNavigation() {
 
   navigation.classList.add("open");
+  menuBackdrop.classList.add("show");
 
-  menuButton.setAttribute(
-    "aria-expanded",
-    "true"
-  );
 }
 
 function closeNavigation() {
 
   navigation.classList.remove("open");
+  menuBackdrop.classList.remove("show");
 
-  menuButton.setAttribute(
-    "aria-expanded",
-    "false"
-  );
 }
 
 menuButton.addEventListener(
@@ -360,178 +385,350 @@ closeMenu.addEventListener(
   closeNavigation
 );
 
-$$("#navLinks button").forEach(button => {
-
-  button.addEventListener("click", () => {
-
-    const target = button.dataset.scene;
-
-    if (target) {
-      showScene(target);
-    }
-  });
-});
-
-function updateNavigation() {
-
-  $$("#navLinks button").forEach(button => {
-
-    button.classList.toggle(
-      "active",
-      button.dataset.scene === state.currentScene
-    );
-  });
-}
-
-updateNavigation();
+menuBackdrop.addEventListener(
+  "click",
+  closeNavigation
+);
 
 /* ============================================================
-   KEYBOARD NAVIGATION
+   PIN SYSTEM
 ============================================================ */
 
-document.addEventListener("keydown", event => {
+const CORRECT_PIN = "230226";
 
-  if (!state.pinUnlocked) return;
+function updatePinDots() {
 
-  if (event.key === "Escape") {
-    closeNavigation();
+  pinDots.forEach(
+    (dot, index) => {
+
+      dot.classList.toggle(
+        "filled",
+        index < state.pin.length
+      );
+
+    }
+  );
+
+}
+
+function pinErrorMessage(message) {
+
+  pinError.textContent =
+    message;
+
+  pinCard.classList.remove("shake");
+
+  /*
+   * Restart animation.
+   */
+  void pinCard.offsetWidth;
+
+  pinCard.classList.add("shake");
+
+}
+
+function clearPin() {
+
+  state.pin = "";
+
+  updatePinDots();
+
+}
+
+function deletePinDigit() {
+
+  if (!state.pin.length) return;
+
+  state.pin =
+    state.pin.slice(0, -1);
+
+  pinError.textContent = "";
+
+  updatePinDots();
+
+}
+
+function addPinDigit(digit) {
+
+  if (state.pin.length >= 6) {
+    return;
   }
 
-});
+  state.pin += digit;
+
+  pinError.textContent = "";
+
+  updatePinDots();
+
+}
+
+function unlock() {
+
+  state.pinUnlocked = true;
+
+  pinCard.classList.remove("shake");
+
+  pinCard.classList.add("unlock");
+
+  pinDots.forEach(
+    dot => dot.classList.add("filled")
+  );
+
+  $$(".pin-key").forEach(
+    button => {
+      button.disabled = true;
+    }
+  );
+
+  /*
+   * Start audio only after user interaction.
+   */
+  setTimeout(
+    playMusicAutomatically,
+    350
+  );
+
+  setTimeout(() => {
+
+    pinScreen.classList.add("exit");
+
+    app.classList.remove("locked");
+
+  }, 600);
+
+  setTimeout(() => {
+
+    updateNavigation();
+
+    /*
+     * We don't remove the screen from DOM immediately.
+     * This keeps the transition clean.
+     */
+
+  }, 900);
+
+}
+
+function verifyPin() {
+
+  if (state.pin.length !== 6) {
+
+    pinErrorMessage(
+      "masukkan 6 digit PIN."
+    );
+
+    return;
+  }
+
+  if (
+    state.pin === CORRECT_PIN
+  ) {
+
+    unlock();
+
+    return;
+  }
+
+  pinErrorMessage(
+    "PIN belum tepat. coba lagi."
+  );
+
+  setTimeout(
+    clearPin,
+    320
+  );
+
+}
+
+$$(".pin-key").forEach(
+  button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        const digit =
+          button.dataset.digit;
+
+        const action =
+          button.dataset.action;
+
+        if (digit !== undefined) {
+
+          addPinDigit(digit);
+
+          /*
+           * Auto-check after 6th digit.
+           */
+          if (
+            state.pin.length === 6
+          ) {
+
+            setTimeout(
+              verifyPin,
+              150
+            );
+
+          }
+
+          return;
+        }
+
+        if (
+          action === "delete"
+        ) {
+
+          deletePinDigit();
+
+        }
+
+      }
+    );
+
+  }
+);
+
+pinSubmit.addEventListener(
+  "click",
+  verifyPin
+);
+
+updatePinDots();
 
 /* ============================================================
    MUSIC
 ============================================================ */
 
+function updateMusicUI() {
+
+  musicButton.classList.toggle(
+    "playing",
+    state.musicPlaying
+  );
+
+  musicToggle.textContent =
+    state.musicPlaying
+      ? "Pause"
+      : "Play";
+
+}
+
 async function playMusic() {
 
   try {
 
-    birthdayAudio.volume = .42;
-
-    await birthdayAudio.play();
+    await audio.play();
 
     state.musicPlaying = true;
 
-    musicButton.classList.add("playing");
-
-    musicStatus.textContent = "music playing";
+    updateMusicUI();
 
   } catch (error) {
 
+    /*
+     * Browser may reject playback.
+     * This is expected until interaction.
+     */
+
     state.musicPlaying = false;
 
-    musicStatus.textContent =
-      "tap play to start music";
+    updateMusicUI();
 
   }
+
 }
 
 function playMusicAutomatically() {
 
-  /*
-    Browser autoplay policies may block this.
-    We intentionally ignore the rejection.
-  */
-
   playMusic();
+
 }
 
 function pauseMusic() {
 
-  birthdayAudio.pause();
+  audio.pause();
 
   state.musicPlaying = false;
 
-  musicButton.classList.remove("playing");
+  updateMusicUI();
 
-  musicStatus.textContent = "music paused";
-}
-
-function toggleMusic() {
-
-  if (state.musicPlaying) {
-    pauseMusic();
-  } else {
-    playMusic();
-  }
 }
 
 musicButton.addEventListener(
   "click",
-  toggleMusic
-);
+  event => {
 
-playMusic.addEventListener(
-  "click",
-  playMusic
-);
+    event.stopPropagation();
 
-pauseMusic.addEventListener(
-  "click",
-  pauseMusic
-);
+    musicPanel.classList.toggle(
+      "show"
+    );
 
-muteMusic.addEventListener("click", () => {
-
-  birthdayAudio.muted =
-    !birthdayAudio.muted;
-
-  state.musicMuted =
-    birthdayAudio.muted;
-
-  muteMusic.textContent =
-    birthdayAudio.muted
-      ? "unmute"
-      : "mute";
-});
-
-birthdayAudio.addEventListener(
-  "timeupdate",
-  () => {
-
-    if (!birthdayAudio.duration) return;
-
-    const percentage =
-      birthdayAudio.currentTime /
-      birthdayAudio.duration *
-      100;
-
-    musicProgress.style.width =
-      `${percentage}%`;
   }
 );
 
-birthdayAudio.addEventListener(
-  "error",
-  () => {
-
-    musicStatus.textContent =
-      "music file unavailable";
-  }
-);
-
-/*
-  If autoplay was blocked, the first interaction
-  starts music.
-*/
-
-document.addEventListener(
-  "pointerdown",
+musicToggle.addEventListener(
+  "click",
   () => {
 
     if (
-      state.pinUnlocked &&
-      !state.musicPlaying &&
-      !state.musicMuted
+      audio.paused
     ) {
       playMusic();
+    } else {
+      pauseMusic();
     }
 
-  },
-  {
-    once: true,
-    passive: true
+  }
+);
+
+audio.addEventListener(
+  "play",
+  () => {
+
+    state.musicPlaying = true;
+
+    updateMusicUI();
+
+  }
+);
+
+audio.addEventListener(
+  "pause",
+  () => {
+
+    state.musicPlaying = false;
+
+    updateMusicUI();
+
+  }
+);
+
+audio.addEventListener(
+  "timeupdate",
+  () => {
+
+    if (!audio.duration) return;
+
+    const percentage =
+      (audio.currentTime /
+      audio.duration) * 100;
+
+    musicProgress.style.width =
+      `${percentage}%`;
+
+  }
+);
+
+audio.addEventListener(
+  "error",
+  () => {
+
+    musicToggle.textContent =
+      "Audio unavailable";
+
+    musicToggle.disabled = true;
+
   }
 );
 
@@ -539,164 +736,180 @@ document.addEventListener(
    GIFT
 ============================================================ */
 
+const giftBox =
+  $("#giftBox");
+
+const giftButton =
+  $("#giftButton");
+
+function openGift() {
+
+  if (state.giftOpened) {
+
+    navigateTo("letter");
+
+    return;
+
+  }
+
+  state.giftOpened = true;
+
+  giftBox.classList.add(
+    "opened"
+  );
+
+  giftButton.querySelector(
+    "span"
+  ).textContent =
+    "Lanjut";
+
+  createGiftParticles();
+
+}
+
+giftButton.addEventListener(
+  "click",
+  openGift
+);
+
+giftBox.addEventListener(
+  "click",
+  openGift
+);
+
 function createGiftParticles() {
 
-  const container = $("#giftParticles");
-
-  if (!container) return;
-
-  container.innerHTML = "";
-
-  for (let i = 0; i < 18; i++) {
+  for (
+    let i = 0;
+    i < 18;
+    i++
+  ) {
 
     const particle =
       document.createElement("span");
 
-    const x =
-      `${Math.round(
-        Math.random() * 180 - 90
-      )}px`;
+    particle.className =
+      "decoration dot";
 
-    const y =
-      `${Math.round(
-        -60 - Math.random() * 100
-      )}px`;
-
-    particle.style.setProperty(
-      "--x",
-      x
-    );
-
-    particle.style.setProperty(
-      "--y",
-      y
-    );
+    particle.style.position =
+      "absolute";
 
     particle.style.left =
-      `${40 + Math.random() * 20}%`;
+      `${45 + Math.random() * 10}%`;
 
     particle.style.top =
-      `${40 + Math.random() * 15}%`;
+      `${42 + Math.random() * 12}%`;
 
-    container.appendChild(particle);
-  }
-}
+    particle.style.transition =
+      "transform 1.4s ease, opacity 1.4s ease";
 
-createGiftParticles();
+    giftBox.appendChild(
+      particle
+    );
 
-function openGiftBox() {
+    requestAnimationFrame(
+      () => {
 
-  if (giftBox.classList.contains("opened")) {
+        particle.style.transform =
+          `translate(
+            ${(Math.random() - .5) * 150}px,
+            ${-40 - Math.random() * 120}px
+          ) scale(${.5 + Math.random()})`;
 
-    goNext("letter");
+        particle.style.opacity = "0";
 
-    return;
-  }
-
-  giftBox.classList.add("opened");
-
-  giftText.textContent =
-    "hadiahnya terbuka.";
-
-  openGift.textContent =
-    "Lanjut";
-
-  createGiftParticles();
-}
-
-giftBox.addEventListener(
-  "click",
-  openGiftBox
-);
-
-openGift.addEventListener(
-  "click",
-  openGiftBox
-);
-
-/* ============================================================
-   REAL-TIME CLOCK
-============================================================ */
-
-const clockConfig = [
-  {
-    id: "Jakarta",
-    timeZone: "Asia/Jakarta",
-    locale: "id-ID"
-  },
-  {
-    id: "Makassar",
-    timeZone: "Asia/Makassar",
-    locale: "id-ID"
-  },
-  {
-    id: "Jayapura",
-    timeZone: "Asia/Jayapura",
-    locale: "id-ID"
-  },
-  {
-    id: "Tokyo",
-    timeZone: "Asia/Tokyo",
-    locale: "ja-JP"
-  }
-];
-
-function getTimeParts(timeZone) {
-
-  const date = new Date();
-
-  const formatter =
-    new Intl.DateTimeFormat(
-      "en-GB",
-      {
-        timeZone,
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false
       }
     );
 
-  return formatter.format(date);
+    setTimeout(
+      () => particle.remove(),
+      1500
+    );
+
+  }
+
 }
 
-function getDateParts(
-  timeZone,
-  locale = "id-ID"
+/* ============================================================
+   REAL TIME CLOCKS
+============================================================ */
+
+const timeZones = {
+
+  clockJakarta: "Asia/Jakarta",
+  clockMakassar: "Asia/Makassar",
+  clockJayapura: "Asia/Jayapura",
+  clockTokyo: "Asia/Tokyo"
+
+};
+
+function formatClock(
+  timeZone
 ) {
 
   return new Intl.DateTimeFormat(
-    locale,
+    "id-ID",
+    {
+      timeZone,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false
+    }
+  ).format(
+    new Date()
+  );
+
+}
+
+function formatDate(
+  timeZone
+) {
+
+  return new Intl.DateTimeFormat(
+    "id-ID",
     {
       timeZone,
       day: "numeric",
       month: "long",
       year: "numeric"
     }
-  ).format(new Date());
+  ).format(
+    new Date()
+  );
+
 }
 
 function updateClocks() {
 
-  clockConfig.forEach(config => {
+  Object.entries(
+    timeZones
+  ).forEach(
+    ([id, zone]) => {
 
-    const clock =
-      $(`#clock${config.id}`);
+      const element =
+        document.getElementById(id);
 
-    const date =
-      $(`#date${config.id}`);
+      if (!element) return;
 
-    if (!clock || !date) return;
+      element.textContent =
+        formatClock(zone);
 
-    clock.textContent =
-      getTimeParts(config.timeZone);
+    }
+  );
+
+  const date =
+    $("#clockDate");
+
+  if (date) {
 
     date.textContent =
-      getDateParts(
-        config.timeZone,
-        config.locale
+      formatDate(
+        "Asia/Tokyo"
       );
-  });
+
+  }
+
 }
 
 updateClocks();
@@ -707,44 +920,70 @@ setInterval(
 );
 
 /* ============================================================
-   CAKE
+   CANDLE / CAKE
 ============================================================ */
 
-let cakePointer = {
-  x: 0,
-  y: 0
-};
+const cake =
+  $("#cake");
+
+const blowButton =
+  $("#blowButton");
+
+const candleStatus =
+  $("#candleStatus");
+
+const candles =
+  $$(".candle");
+
+let cakeTiltX = 10;
+let cakeTiltY = -18;
+
+function updateCakeTilt(
+  x,
+  y
+) {
+
+  if (state.candlesOff) return;
+
+  cakeTiltY =
+    -18 + x * 9;
+
+  cakeTiltX =
+    10 - y * 7;
+
+  cake.style.transform =
+    `rotateX(${cakeTiltX}deg)
+     rotateY(${cakeTiltY}deg)`;
+
+}
+
+function handleCakePointer(
+  event
+) {
+
+  const rect =
+    cake.getBoundingClientRect();
+
+  const point =
+    event.touches
+      ? event.touches[0]
+      : event;
+
+  const x =
+    ((point.clientX - rect.left) /
+      rect.width) - .5;
+
+  const y =
+    ((point.clientY - rect.top) /
+      rect.height) - .5;
+
+  updateCakeTilt(x, y);
+
+}
 
 cake.addEventListener(
   "pointermove",
-  event => {
-
-    const rect =
-      cake.getBoundingClientRect();
-
-    const x =
-      (event.clientX - rect.left) /
-      rect.width;
-
-    const y =
-      (event.clientY - rect.top) /
-      rect.height;
-
-    cakePointer.x =
-      (x - .5) * 2;
-
-    cakePointer.y =
-      (y - .5) * 2;
-
-    cake.style.transform =
-      `
-      rotateX(${7 - cakePointer.y * 6}deg)
-      rotateY(${cakePointer.x * 10}deg)
-      `;
-  },
-  {
-    passive: true
-  }
+  handleCakePointer
 );
 
 cake.addEventListener(
@@ -752,107 +991,119 @@ cake.addEventListener(
   () => {
 
     cake.style.transform =
-      "rotateX(7deg) rotateY(0deg)";
+      "rotateX(10deg) rotateY(-18deg)";
+
   }
 );
 
-function blowOutCandles() {
+function extinguishCandles() {
 
-  if (state.cakeBlown) return;
+  if (state.candlesOff) return;
 
-  state.cakeBlown = true;
+  state.candlesOff = true;
 
-  cake.classList.add("blown");
+  candles.forEach(
+    candle => {
+
+      candle.classList.add(
+        "off"
+      );
+
+    }
+  );
 
   candleStatus.textContent =
-    "wish made.";
+    "wish made. sekarang simpan harapannya.";
 
-  createSmoke();
+  blowButton.querySelector(
+    "span"
+  ).textContent =
+    "lanjut";
 
-  createCakeParticles();
+  createCandleParticles();
+
 }
 
-function createSmoke() {
+blowButton.addEventListener(
+  "click",
+  () => {
 
-  const positions = [
-    104,
-    124,
-    144
-  ];
+    if (
+      state.candlesOff
+    ) {
 
-  positions.forEach((left, index) => {
+      navigateTo("wish");
 
-    const smoke =
-      document.createElement("span");
+      return;
 
-    smoke.className = "smoke";
+    }
 
-    smoke.style.left =
-      `${left}px`;
+    extinguishCandles();
 
-    smoke.style.bottom =
-      `${228 + index * 2}px`;
+  }
+);
 
-    smoke.style.setProperty(
-      "--sx",
-      `${index % 2 === 0 ? -12 : 13}px`
-    );
+function createCandleParticles() {
 
-    smokeContainer.appendChild(smoke);
-
-    setTimeout(() => {
-      smoke.remove();
-    }, 1800);
-  });
-}
-
-function createCakeParticles() {
-
-  for (let i = 0; i < 18; i++) {
+  for (
+    let i = 0;
+    i < 24;
+    i++
+  ) {
 
     const particle =
       document.createElement("span");
 
     particle.className =
-      "decor decor-star";
-
-    particle.style.position =
-      "absolute";
+      "decoration dot";
 
     particle.style.left =
-      `${50 + Math.random() * 30 - 15}%`;
+      `${45 + Math.random() * 10}%`;
 
     particle.style.top =
-      `${40 + Math.random() * 20}%`;
+      `${38 + Math.random() * 12}%`;
 
-    particle.style.setProperty(
-      "--size",
-      `${3 + Math.random() * 4}px`
+    particle.style.transition =
+      "transform 1.3s ease, opacity 1.3s ease";
+
+    cake.parentElement.appendChild(
+      particle
     );
 
-    particle.style.setProperty(
-      "--duration",
-      "1.5s"
+    requestAnimationFrame(
+      () => {
+
+        particle.style.transform =
+          `translate(
+            ${(Math.random() - .5) * 170}px,
+            ${-50 - Math.random() * 120}px
+          )`;
+
+        particle.style.opacity =
+          "0";
+
+      }
     );
 
-    cake.appendChild(particle);
+    setTimeout(
+      () => particle.remove(),
+      1400
+    );
 
-    setTimeout(() => {
-      particle.remove();
-    }, 1500);
   }
+
 }
 
-blowCandles.addEventListener(
-  "click",
-  blowOutCandles
-);
-
 /* ============================================================
-   OPTIONAL MICROPHONE SUPPORT
+   OPTIONAL MICROPHONE BLOW
 ============================================================ */
 
-async function tryMicrophoneBlowDetection() {
+async function tryMicrophoneBlow() {
+
+  /*
+   * Optional feature.
+   * The website does not depend on microphone permission.
+   */
 
   if (
     !navigator.mediaDevices ||
@@ -862,133 +1113,29 @@ async function tryMicrophoneBlowDetection() {
   }
 
   /*
-    Microphone remains optional.
-    The main interaction never depends on it.
-  */
+   * We deliberately don't request microphone
+   * automatically.
+   *
+   * This keeps the experience private
+   * and permission-free by default.
+   */
 
-  try {
-
-    const stream =
-      await navigator.mediaDevices.getUserMedia({
-        audio: true
-      });
-
-    const AudioContext =
-      window.AudioContext ||
-      window.webkitAudioContext;
-
-    if (!AudioContext) {
-
-      stream.getTracks().forEach(
-        track => track.stop()
-      );
-
-      return;
-    }
-
-    const context =
-      new AudioContext();
-
-    const analyser =
-      context.createAnalyser();
-
-    analyser.fftSize = 512;
-
-    const source =
-      context.createMediaStreamSource(stream);
-
-    source.connect(analyser);
-
-    const data =
-      new Uint8Array(
-        analyser.fftSize
-      );
-
-    let started = false;
-
-    function detect() {
-
-      if (state.cakeBlown) {
-
-        stream.getTracks().forEach(
-          track => track.stop()
-        );
-
-        context.close();
-
-        return;
-      }
-
-      analyser.getByteTimeDomainData(data);
-
-      let sum = 0;
-
-      for (let i = 0; i < data.length; i++) {
-
-        const value =
-          (data[i] - 128) / 128;
-
-        sum += value * value;
-      }
-
-      const rms =
-        Math.sqrt(sum / data.length);
-
-      if (rms > .18) {
-
-        started = true;
-
-      } else if (
-        started &&
-        rms < .06
-      ) {
-
-        blowOutCandles();
-
-        stream.getTracks().forEach(
-          track => track.stop()
-        );
-
-        context.close();
-
-        return;
-      }
-
-      requestAnimationFrame(detect);
-    }
-
-    detect();
-
-  } catch {
-    /*
-      Permission denied or unavailable.
-      Click fallback remains functional.
-    }
-  }
 }
-
-/*
-  The microphone function exists as an optional enhancement.
-  It is intentionally not automatically requested.
-*/
-
-window.enableOptionalBlowDetection =
-  tryMicrophoneBlowDetection;
 
 /* ============================================================
    WISH
 ============================================================ */
 
-wishInput.addEventListener(
-  "input",
-  () => {
+const wishInput =
+  $("#wishInput");
 
-    wishCount.textContent =
-      `${wishInput.value.length} / 120`;
-  }
-);
+const wishButton =
+  $("#wishButton");
 
-function releaseWishIntoSky() {
+const wishSky =
+  $("#wishSky");
+
+function releaseWish() {
 
   const text =
     wishInput.value.trim();
@@ -998,38 +1145,34 @@ function releaseWishIntoSky() {
     wishInput.focus();
 
     return;
+
   }
 
-  const object =
+  const wish =
     document.createElement("div");
 
-  object.className =
+  wish.className =
     "wish-object";
 
-  object.textContent = text;
+  wish.textContent =
+    text;
 
-  object.style.setProperty(
-    "--drift",
-    `${Math.round(
-      Math.random() * 120 - 60
-    )}px`
+  wish.style.left =
+    `${30 + Math.random() * 40}%`;
+
+  wishSky.appendChild(
+    wish
   );
 
-  wishSky.appendChild(object);
+  state.wishReleased = true;
 
   wishInput.value = "";
 
-  wishCount.textContent =
-    "0 / 120";
-
-  setTimeout(() => {
-    object.remove();
-  }, 4200);
 }
 
-releaseWish.addEventListener(
+wishButton.addEventListener(
   "click",
-  releaseWishIntoSky
+  releaseWish
 );
 
 wishInput.addEventListener(
@@ -1037,238 +1180,13 @@ wishInput.addEventListener(
   event => {
 
     if (
-      event.key === "Enter" &&
-      (event.ctrlKey || event.metaKey)
+      event.key === "Enter"
     ) {
 
-      event.preventDefault();
+      releaseWish();
 
-      releaseWishIntoSky();
-    }
-  }
-);
-
-/* ============================================================
-   LOVE THREAD
-============================================================ */
-
-const heartCanvas = $("#heartCanvas");
-const heartContext =
-  heartCanvas.getContext("2d");
-
-let heartPoints = [];
-let heartAnimationFrame = null;
-
-function resizeHeartCanvas() {
-
-  const rect =
-    heartCanvas.getBoundingClientRect();
-
-  const dpr =
-    Math.min(window.devicePixelRatio || 1, 2);
-
-  heartCanvas.width =
-    rect.width * dpr;
-
-  heartCanvas.height =
-    rect.height * dpr;
-
-  heartContext.setTransform(
-    dpr,
-    0,
-    0,
-    dpr,
-    0,
-    0
-  );
-
-  createHeartPoints();
-}
-
-function createHeartPoints() {
-
-  heartPoints = [];
-
-  const rect =
-    heartCanvas.getBoundingClientRect();
-
-  const width = rect.width;
-  const height = rect.height;
-
-  const scale =
-    Math.min(width, height) / 38;
-
-  const centerX =
-    width / 2;
-
-  const centerY =
-    height / 2 + 7;
-
-  for (
-    let t = 0;
-    t < Math.PI * 2;
-    t += .035
-  ) {
-
-    const x =
-      16 *
-      Math.pow(Math.sin(t), 3);
-
-    const y =
-      -(
-        13 * Math.cos(t)
-        - 5 * Math.cos(2 * t)
-        - 2 * Math.cos(3 * t)
-        - Math.cos(4 * t)
-      );
-
-    heartPoints.push({
-      x: centerX + x * scale,
-      y: centerY + y * scale
-    });
-  }
-}
-
-function drawHeart(time = 0) {
-
-  const rect =
-    heartCanvas.getBoundingClientRect();
-
-  heartContext.clearRect(
-    0,
-    0,
-    rect.width,
-    rect.height
-  );
-
-  if (!heartPoints.length) {
-
-    heartAnimationFrame =
-      requestAnimationFrame(drawHeart);
-
-    return;
-  }
-
-  const progress =
-    Math.min(
-      1,
-      (performance.now() - heartStart) / 2600
-    );
-
-  const visible =
-    Math.max(
-      2,
-      Math.floor(
-        heartPoints.length * progress
-      )
-    );
-
-  heartContext.save();
-
-  heartContext.lineWidth = 1.2;
-  heartContext.lineCap = "round";
-  heartContext.lineJoin = "round";
-
-  for (let layer = 0; layer < 3; layer++) {
-
-    heartContext.beginPath();
-
-    const depth =
-      layer * 1.8;
-
-    for (
-      let i = 0;
-      i < visible;
-      i++
-    ) {
-
-      const point =
-        heartPoints[i];
-
-      const wave =
-        Math.sin(
-          time * .0015 +
-          i * .05
-        ) * .7;
-
-      const x =
-        point.x + wave + depth;
-
-      const y =
-        point.y +
-        Math.cos(
-          time * .0012 +
-          i * .06
-        ) * .7 +
-        depth;
-
-      if (i === 0) {
-        heartContext.moveTo(x, y);
-      } else {
-        heartContext.lineTo(x, y);
-      }
     }
 
-    heartContext.strokeStyle =
-      layer === 0
-        ? "rgba(188,53,75,.92)"
-        : layer === 1
-          ? "rgba(131,33,51,.55)"
-          : "rgba(90,26,41,.4)";
-
-    heartContext.shadowBlur =
-      layer === 0 ? 10 : 3;
-
-    heartContext.shadowColor =
-      "rgba(154,36,57,.45)";
-
-    heartContext.stroke();
-  }
-
-  heartContext.restore();
-
-  heartAnimationFrame =
-    requestAnimationFrame(drawHeart);
-}
-
-let heartStart = performance.now();
-
-function startHeartAnimation() {
-
-  if (heartAnimationFrame) {
-
-    cancelAnimationFrame(
-      heartAnimationFrame
-    );
-  }
-
-  heartStart = performance.now();
-
-  createHeartPoints();
-
-  heartAnimationFrame =
-    requestAnimationFrame(drawHeart);
-}
-
-window.addEventListener(
-  "resize",
-  resizeHeartCanvas
-);
-
-resizeHeartCanvas();
-
-window.addEventListener(
-  "scenechange",
-  event => {
-
-    if (
-      event.detail.scene === "thread"
-    ) {
-      setTimeout(
-        startHeartAnimation,
-        100
-      );
-    }
   }
 );
 
@@ -1276,185 +1194,185 @@ window.addEventListener(
    MATH GAME
 ============================================================ */
 
-function generateMathQuestion() {
-
-  const type =
-    Math.floor(Math.random() * 4);
-
-  let a;
-  let b;
-  let answer;
-  let symbol;
-
-  if (type === 0) {
-
-    a =
-      Math.floor(Math.random() * 20) + 1;
-
-    b =
-      Math.floor(Math.random() * 20) + 1;
-
-    answer = a + b;
-    symbol = "+";
-
-  } else if (type === 1) {
-
-    a =
-      Math.floor(Math.random() * 30) + 10;
-
-    b =
-      Math.floor(Math.random() * 10) + 1;
-
-    answer = a - b;
-    symbol = "−";
-
-  } else if (type === 2) {
-
-    a =
-      Math.floor(Math.random() * 9) + 2;
-
-    b =
-      Math.floor(Math.random() * 9) + 2;
-
-    answer = a * b;
-    symbol = "×";
-
-  } else {
-
-    b =
-      Math.floor(Math.random() * 8) + 2;
-
-    answer =
-      Math.floor(Math.random() * 9) + 2;
-
-    a = b * answer;
-
-    symbol = "÷";
+const mathQuestions = [
+  {
+    question: "4 + 7 = ?",
+    answer: 11
+  },
+  {
+    question: "15 - 6 = ?",
+    answer: 9
+  },
+  {
+    question: "5 × 4 = ?",
+    answer: 20
+  },
+  {
+    question: "18 ÷ 3 = ?",
+    answer: 6
+  },
+  {
+    question: "9 + 8 = ?",
+    answer: 17
   }
+];
 
-  return {
-    text: `${a} ${symbol} ${b} = ?`,
-    answer
-  };
+const mathQuestion =
+  $("#mathQuestion");
+
+const mathAnswer =
+  $("#mathAnswer");
+
+const mathCheck =
+  $("#mathCheck");
+
+const mathFeedback =
+  $("#mathFeedback");
+
+const mathProgress =
+  $("#mathProgress");
+
+const mathScore =
+  $("#mathScore");
+
+function renderMath() {
+
+  const item =
+    mathQuestions[state.mathIndex];
+
+  mathQuestion.textContent =
+    item.question;
+
+  mathProgress.textContent =
+    `${state.mathIndex + 1} / ${mathQuestions.length}`;
+
+  mathScore.textContent =
+    state.mathScore;
+
+  mathAnswer.value = "";
+
+  mathFeedback.textContent = "";
+
 }
 
-function setupMathGame() {
+function checkMath() {
 
-  state.math.question = 0;
-  state.math.score = 0;
-  state.math.questions = [];
-
-  for (let i = 0; i < 5; i++) {
-    state.math.questions.push(
-      generateMathQuestion()
-    );
-  }
-
-  updateMathUI();
-}
-
-function updateMathUI() {
-
-  const current =
-    state.math.questions[
-      state.math.question
-    ];
-
-  if (!current) return;
-
-  $("#mathQuestion").textContent =
-    current.text;
-
-  $("#mathQuestionNumber").textContent =
-    state.math.question + 1;
-
-  $("#mathScore").textContent =
-    `${state.math.score} pts`;
-
-  $("#mathAnswer").value = "";
-
-  $("#mathFeedback").textContent = "";
-}
-
-function checkMathAnswer() {
-
-  const input =
-    $("#mathAnswer");
+  const item =
+    mathQuestions[state.mathIndex];
 
   const answer =
-    Number(input.value);
+    Number(
+      mathAnswer.value
+    );
 
-  const current =
-    state.math.questions[
-      state.math.question
-    ];
+  if (
+    answer === item.answer
+  ) {
 
-  if (!current) return;
+    state.mathScore++;
 
-  if (answer === current.answer) {
-
-    state.math.score += 20;
-
-    $("#mathFeedback").textContent =
+    mathFeedback.textContent =
       "benar. lanjut.";
 
   } else {
 
-    $("#mathFeedback").textContent =
-      `belum tepat. jawabannya ${current.answer}.`;
+    mathFeedback.textContent =
+      `belum tepat. jawabannya ${item.answer}.`;
+
   }
 
-  setTimeout(() => {
+  mathScore.textContent =
+    state.mathScore;
 
-    state.math.question++;
+  setTimeout(
+    () => {
 
-    if (
-      state.math.question >= 5
-    ) {
+      state.mathIndex++;
 
-      $("#mathQuestion").textContent =
-        `selesai — ${state.math.score} pts`;
+      if (
+        state.mathIndex >=
+        mathQuestions.length
+      ) {
 
-      $("#mathFeedback").textContent =
-        "game selesai. tekan restart untuk bermain lagi.";
+        mathFeedback.textContent =
+          `selesai. score Aa: ${state.mathScore}/${mathQuestions.length}`;
 
-      return;
-    }
+        mathCheck.querySelector(
+          "span"
+        ).textContent =
+          "Ulangi";
 
-    updateMathUI();
+        return;
 
-  }, 700);
+      }
+
+      renderMath();
+
+    },
+    850
+  );
+
 }
 
-$("#mathCheck").addEventListener(
+function resetMath() {
+
+  state.mathIndex = 0;
+  state.mathScore = 0;
+
+  mathCheck.querySelector(
+    "span"
+  ).textContent =
+    "Check";
+
+  renderMath();
+
+}
+
+mathCheck.addEventListener(
   "click",
-  checkMathAnswer
+  () => {
+
+    if (
+      state.mathIndex >=
+      mathQuestions.length
+    ) {
+
+      resetMath();
+
+      return;
+
+    }
+
+    checkMath();
+
+  }
 );
 
-$("#mathAnswer").addEventListener(
+mathAnswer.addEventListener(
   "keydown",
   event => {
 
-    if (event.key === "Enter") {
-      checkMathAnswer();
+    if (
+      event.key === "Enter"
+    ) {
+
+      checkMath();
+
     }
+
   }
 );
 
-$("#mathRestart").addEventListener(
-  "click",
-  setupMathGame
-);
-
-setupMathGame();
+renderMath();
 
 /* ============================================================
    ENGLISH GAME
 ============================================================ */
 
 const englishQuestions = [
+
   {
-    question: "happy",
+    question: "happy means...",
     options: [
       "sedih",
       "bahagia",
@@ -1462,66 +1380,84 @@ const englishQuestions = [
     ],
     answer: 1
   },
+
   {
-    question: "beautiful",
+    question: "big means...",
     options: [
-      "indah",
-      "cepat",
-      "dingin"
+      "besar",
+      "kecil",
+      "cepat"
     ],
     answer: 0
   },
+
   {
-    question: "strong",
+    question: "I ___ tired.",
     options: [
-      "lemah",
-      "kuat",
-      "kecil"
+      "am",
+      "is",
+      "are"
+    ],
+    answer: 0
+  },
+
+  {
+    question: "good means...",
+    options: [
+      "buruk",
+      "baik",
+      "jauh"
     ],
     answer: 1
   },
+
   {
-    question: "tired",
+    question: "thank you means...",
     options: [
-      "lelah",
-      "senang",
-      "tinggi"
+      "selamat tinggal",
+      "terima kasih",
+      "sampai nanti"
     ],
-    answer: 0
-  },
-  {
-    question: "dream",
-    options: [
-      "mimpi",
-      "hujan",
-      "rumah"
-    ],
-    answer: 0
+    answer: 1
   }
+
 ];
 
-function updateEnglishUI() {
+const englishQuestion =
+  $("#englishQuestion");
+
+const englishOptions =
+  $("#englishOptions");
+
+const englishFeedback =
+  $("#englishFeedback");
+
+const englishProgress =
+  $("#englishProgress");
+
+const englishScore =
+  $("#englishScore");
+
+function renderEnglish() {
 
   const item =
     englishQuestions[
-      state.english.question
+      state.englishIndex
     ];
 
-  if (!item) return;
-
-  $("#englishQuestion").textContent =
+  englishQuestion.textContent =
     item.question;
 
-  $("#englishQuestionNumber").textContent =
-    state.english.question + 1;
+  englishProgress.textContent =
+    `${state.englishIndex + 1} / ${englishQuestions.length}`;
 
-  $("#englishScore").textContent =
-    `${state.english.score} pts`;
+  englishScore.textContent =
+    state.englishScore;
 
-  const options =
-    $("#englishOptions");
+  englishFeedback.textContent =
+    "";
 
-  options.innerHTML = "";
+  englishOptions.innerHTML = "";
 
   item.options.forEach(
     (option, index) => {
@@ -1529,604 +1465,1060 @@ function updateEnglishUI() {
       const button =
         document.createElement("button");
 
+      button.type =
+        "button";
+
       button.className =
         "english-option";
-
-      button.type = "button";
 
       button.textContent =
         `${String.fromCharCode(65 + index)}. ${option}`;
 
       button.addEventListener(
         "click",
-        () => checkEnglish(index)
+        () => answerEnglish(index)
       );
 
-      options.appendChild(button);
+      englishOptions.appendChild(
+        button
+      );
+
     }
   );
 
-  $("#englishFeedback").textContent = "";
 }
 
-function checkEnglish(selected) {
+function answerEnglish(index) {
 
   const item =
     englishQuestions[
-      state.english.question
+      state.englishIndex
     ];
 
-  const buttons =
-    $$(".english-option");
+  if (
+    index === item.answer
+  ) {
 
-  buttons.forEach(button => {
-    button.disabled = true;
-  });
+    state.englishScore++;
 
-  if (selected === item.answer) {
-
-    state.english.score += 20;
-
-    $("#englishFeedback").textContent =
+    englishFeedback.textContent =
       "benar.";
+
   } else {
 
-    $("#englishFeedback").textContent =
-      `jawaban yang tepat: ${item.options[item.answer]}`;
+    englishFeedback.textContent =
+      `belum tepat. jawabannya ${item.options[item.answer]}.`;
+
   }
 
-  setTimeout(() => {
+  englishScore.textContent =
+    state.englishScore;
 
-    state.english.question++;
-
-    if (
-      state.english.question >=
-      englishQuestions.length
-    ) {
-
-      $("#englishQuestion").textContent =
-        `selesai — ${state.english.score} pts`;
-
-      $("#englishOptions").innerHTML = "";
-
-      $("#englishFeedback").textContent =
-        "game selesai. tekan restart untuk bermain lagi.";
-
-      return;
+  $$(".english-option").forEach(
+    button => {
+      button.disabled = true;
     }
+  );
 
-    updateEnglishUI();
-
-  }, 750);
-}
-
-$("#englishRestart").addEventListener(
-  "click",
-  () => {
-
-    state.english.question = 0;
-    state.english.score = 0;
-
-    updateEnglishUI();
-  }
-);
-
-updateEnglishUI();
-
-/* ============================================================
-   GAME HUB
-============================================================ */
-
-$$(".game-card").forEach(card => {
-
-  card.addEventListener(
-    "click",
+  setTimeout(
     () => {
 
-      const game =
-        card.dataset.game;
+      state.englishIndex++;
 
-      $$(".game-card").forEach(
-        item => item.classList.remove("active")
-      );
+      if (
+        state.englishIndex >=
+        englishQuestions.length
+      ) {
 
-      $$(".game-panel").forEach(
-        panel => panel.classList.remove("active")
-      );
+        englishQuestion.textContent =
+          "selesai.";
 
-      card.classList.add("active");
+        englishOptions.innerHTML = "";
 
-      const target =
-        $(`#${game}Game`);
+        englishFeedback.textContent =
+          `score Aa: ${state.englishScore}/${englishQuestions.length}`;
 
-      if (target) {
-        target.classList.add("active");
+        return;
+
       }
-    }
-  );
-});
 
-/*
-  Open Math by default.
-*/
+      renderEnglish();
 
-const defaultGame =
-  document.querySelector(
-    '[data-game="math"]'
+    },
+    850
   );
 
-if (defaultGame) {
-  defaultGame.click();
 }
+
+renderEnglish();
 
 /* ============================================================
    STAR RUN
 ============================================================ */
 
-const starCanvas = $("#starCanvas");
-const starContext =
+const starCanvas =
+  $("#starCanvas");
+
+const starCtx =
   starCanvas.getContext("2d");
 
-const starGame = {
-  player: {
-    x: 0,
-    y: 0,
-    radius: 12,
-    speed: 4
-  },
+const starStart =
+  $("#starStart");
 
-  stars: [],
+const starOverlay =
+  $("#starStartOverlay");
 
-  animation: null,
-  timerInterval: null,
-  lastTime: 0
+const starScore =
+  $("#starScore");
+
+const starTime =
+  $("#starTime");
+
+let starAnimationId = null;
+
+let starTimerId = null;
+
+const starPlayer = {
+  x: 360,
+  y: 760,
+  radius: 22,
+  targetX: 360,
+  targetY: 760
 };
 
-function resizeStarCanvas() {
+let stars = [];
 
-  const rect =
-    starCanvas.getBoundingClientRect();
+function createStar() {
 
-  const dpr =
-    Math.min(
-      window.devicePixelRatio || 1,
-      2
+  return {
+    x: 30 + Math.random() * 660,
+    y: 70 + Math.random() * 720,
+    radius: 10,
+    phase: Math.random() * Math.PI * 2
+  };
+
+}
+
+function resetStarGame() {
+
+  stopStarGame();
+
+  state.starScore = 0;
+  state.starTime = 20;
+
+  starScore.textContent = "0";
+  starTime.textContent = "20";
+
+  starPlayer.x = 360;
+  starPlayer.y = 760;
+  starPlayer.targetX = 360;
+  starPlayer.targetY = 760;
+
+  stars = [];
+
+  for (
+    let i = 0;
+    i < 5;
+    i++
+  ) {
+
+    stars.push(
+      createStar()
     );
 
-  starCanvas.width =
-    rect.width * dpr;
-
-  starCanvas.height =
-    rect.height * dpr;
-
-  starContext.setTransform(
-    dpr,
-    0,
-    0,
-    dpr,
-    0,
-    0
-  );
-
-  starGame.player.x =
-    rect.width / 2;
-
-  starGame.player.y =
-    rect.height / 2;
-}
-
-function spawnStar() {
-
-  const rect =
-    starCanvas.getBoundingClientRect();
-
-  starGame.stars.push({
-    x: 20 + Math.random() * (rect.width - 40),
-    y: 20 + Math.random() * (rect.height - 40),
-    radius: 5 + Math.random() * 3,
-    rotation: Math.random() * Math.PI,
-    pulse: Math.random() * Math.PI * 2
-  });
-}
-
-function drawGameStar(
-  context,
-  x,
-  y,
-  radius,
-  rotation
-) {
-
-  context.save();
-
-  context.translate(x, y);
-  context.rotate(rotation);
-
-  context.beginPath();
-
-  for (let i = 0; i < 10; i++) {
-
-    const angle =
-      -Math.PI / 2 +
-      i * Math.PI / 5;
-
-    const r =
-      i % 2 === 0
-        ? radius
-        : radius * .4;
-
-    const px =
-      Math.cos(angle) * r;
-
-    const py =
-      Math.sin(angle) * r;
-
-    if (i === 0) {
-      context.moveTo(px, py);
-    } else {
-      context.lineTo(px, py);
-    }
   }
 
-  context.closePath();
+  starOverlay.classList.remove(
+    "hidden"
+  );
 
-  context.fillStyle =
-    "rgba(188,215,255,.9)";
+  drawStarScene();
 
-  context.shadowBlur = 10;
-  context.shadowColor =
-    "rgba(103,155,255,.8)";
-
-  context.fill();
-
-  context.restore();
 }
 
-function drawStarRun(timestamp) {
+function drawStarScene() {
 
-  if (!starGame.running) return;
+  const width =
+    starCanvas.width;
 
-  const rect =
-    starCanvas.getBoundingClientRect();
+  const height =
+    starCanvas.height;
 
-  starContext.clearRect(
+  starCtx.clearRect(
     0,
     0,
-    rect.width,
-    rect.height
+    width,
+    height
   );
 
   /*
-    Background
-  */
+   * Background
+   */
+  starCtx.fillStyle =
+    "#020a1d";
 
+  starCtx.fillRect(
+    0,
+    0,
+    width,
+    height
+  );
+
+  /*
+   * Small ambient stars
+   */
+  for (
+    let i = 0;
+    i < 35;
+    i++
+  ) {
+
+    const x =
+      (i * 137) % width;
+
+    const y =
+      (i * 83) % height;
+
+    starCtx.fillStyle =
+      "rgba(159,191,246,.35)";
+
+    starCtx.fillRect(
+      x,
+      y,
+      2,
+      2
+    );
+
+  }
+
+  /*
+   * Game stars
+   */
+  stars.forEach(
+    star => {
+
+      const pulse =
+        1 +
+        Math.sin(
+          performance.now() / 350 +
+          star.phase
+        ) * .12;
+
+      drawStar(
+        star.x,
+        star.y,
+        star.radius * pulse
+      );
+
+    }
+  );
+
+  /*
+   * Player
+   */
   const gradient =
-    starContext.createRadialGradient(
-      rect.width / 2,
-      rect.height / 2,
-      10,
-      rect.width / 2,
-      rect.height / 2,
-      rect.width
+    starCtx.createRadialGradient(
+      starPlayer.x - 5,
+      starPlayer.y - 7,
+      2,
+      starPlayer.x,
+      starPlayer.y,
+      starPlayer.radius
     );
 
   gradient.addColorStop(
     0,
-    "rgba(34,68,136,.25)"
+    "#dbeaff"
+  );
+
+  gradient.addColorStop(
+    .45,
+    "#6f9eea"
   );
 
   gradient.addColorStop(
     1,
-    "rgba(1,6,17,.85)"
+    "rgba(50,93,168,.2)"
   );
 
-  starContext.fillStyle =
+  starCtx.beginPath();
+
+  starCtx.arc(
+    starPlayer.x,
+    starPlayer.y,
+    starPlayer.radius,
+    0,
+    Math.PI * 2
+  );
+
+  starCtx.fillStyle =
     gradient;
 
-  starContext.fillRect(
-    0,
-    0,
-    rect.width,
-    rect.height
-  );
+  starCtx.fill();
 
-  /*
-    Background stars
-  */
-
-  for (let i = 0; i < 25; i++) {
-
-    const x =
-      (i * 71) % rect.width;
-
-    const y =
-      (i * 43) % rect.height;
-
-    starContext.fillStyle =
-      "rgba(165,193,244,.28)";
-
-    starContext.fillRect(
-      x,
-      y,
-      1,
-      1
-    );
-  }
-
-  /*
-    Game stars
-  */
-
-  starGame.stars.forEach(
-    star => {
-
-      star.pulse += .04;
-
-      const scale =
-        1 +
-        Math.sin(star.pulse) * .12;
-
-      drawGameStar(
-        starContext,
-        star.x,
-        star.y,
-        star.radius * scale,
-        star.rotation
-      );
-    }
-  );
-
-  /*
-    Player
-  */
-
-  const player =
-    starGame.player;
-
-  starContext.beginPath();
-
-  starContext.arc(
-    player.x,
-    player.y,
-    player.radius,
-    0,
-    Math.PI * 2
-  );
-
-  starContext.fillStyle =
-    "rgba(123,161,235,.9)";
-
-  starContext.shadowBlur = 18;
-  starContext.shadowColor =
-    "rgba(91,145,255,.8)";
-
-  starContext.fill();
-
-  starContext.beginPath();
-
-  starContext.arc(
-    player.x,
-    player.y,
-    player.radius * .35,
-    0,
-    Math.PI * 2
-  );
-
-  starContext.fillStyle =
-    "rgba(240,247,255,.95)";
-
-  starContext.fill();
-
-  /*
-    Collision
-  */
-
-  for (
-    let i = starGame.stars.length - 1;
-    i >= 0;
-    i--
+  if (
+    state.starRunning
   ) {
 
-    const star =
-      starGame.stars[i];
-
-    const dx =
-      player.x - star.x;
-
-    const dy =
-      player.y - star.y;
-
-    const distance =
-      Math.sqrt(
-        dx * dx + dy * dy
+    starAnimationId =
+      requestAnimationFrame(
+        drawStarScene
       );
 
-    if (
-      distance <
-      player.radius + star.radius + 4
-    ) {
-
-      starGame.stars.splice(i, 1);
-
-      state.star.score += 10;
-      state.star.combo++;
-
-      $("#starScore").textContent =
-        state.star.score;
-
-      $("#starCombo").textContent =
-        state.star.combo;
-
-      spawnStar();
-    }
   }
 
-  starGame.animation =
-    requestAnimationFrame(
-      drawStarRun
-    );
 }
 
-function startStarRun() {
+function drawStar(
+  x,
+  y,
+  size
+) {
 
-  if (starGame.running) return;
+  starCtx.save();
 
-  resizeStarCanvas();
-
-  starGame.running = true;
-  state.star.score = 0;
-  state.star.combo = 0;
-  state.star.time = 20;
-
-  starGame.stars = [];
-
-  for (let i = 0; i < 5; i++) {
-    spawnStar();
-  }
-
-  $("#starScore").textContent = "0";
-  $("#starCombo").textContent = "0";
-  $("#starTimer").textContent = "20";
-
-  clearInterval(
-    starGame.timerInterval
+  starCtx.translate(
+    x,
+    y
   );
 
-  starGame.timerInterval =
-    setInterval(() => {
+  starCtx.rotate(
+    Math.PI / 4
+  );
 
-      if (!starGame.running) return;
+  starCtx.fillStyle =
+    "#dbe8ff";
 
-      state.star.time--;
+  starCtx.shadowBlur =
+    18;
 
-      $("#starTimer").textContent =
-        state.star.time;
+  starCtx.shadowColor =
+    "rgba(122,171,255,.8)";
 
-      if (state.star.time <= 0) {
-        stopStarRun();
+  starCtx.fillRect(
+    -size / 2,
+    -size / 2,
+    size,
+    size
+  );
+
+  starCtx.restore();
+
+}
+
+function updateStarPlayer() {
+
+  starPlayer.x +=
+    (starPlayer.targetX -
+      starPlayer.x) * .16;
+
+  starPlayer.y +=
+    (starPlayer.targetY -
+      starPlayer.y) * .16;
+
+}
+
+function checkStarCollision() {
+
+  stars.forEach(
+    (star, index) => {
+
+      const dx =
+        star.x -
+        starPlayer.x;
+
+      const dy =
+        star.y -
+        starPlayer.y;
+
+      const distance =
+        Math.sqrt(
+          dx * dx +
+          dy * dy
+        );
+
+      if (
+        distance <
+        star.radius +
+        starPlayer.radius
+      ) {
+
+        stars.splice(
+          index,
+          1
+        );
+
+        state.starScore++;
+
+        starScore.textContent =
+          state.starScore;
+
+        stars.push(
+          createStar()
+        );
+
       }
 
-    }, 1000);
-
-  starGame.animation =
-    requestAnimationFrame(
-      drawStarRun
-    );
-}
-
-function stopStarRun() {
-
-  starGame.running = false;
-
-  clearInterval(
-    starGame.timerInterval
+    }
   );
 
-  if (starGame.animation) {
+}
+
+function starLoop() {
+
+  if (!state.starRunning) {
+    return;
+  }
+
+  updateStarPlayer();
+
+  checkStarCollision();
+
+}
+
+function startStarGame() {
+
+  if (state.starRunning) {
+    return;
+  }
+
+  state.starRunning = true;
+
+  state.starScore = 0;
+  state.starTime = 20;
+
+  starScore.textContent = "0";
+  starTime.textContent = "20";
+
+  stars = [];
+
+  for (
+    let i = 0;
+    i < 5;
+    i++
+  ) {
+
+    stars.push(
+      createStar()
+    );
+
+  }
+
+  starOverlay.classList.add(
+    "hidden"
+  );
+
+  function frame() {
+
+    if (!state.starRunning) {
+      return;
+    }
+
+    starLoop();
+
+    drawStarScene();
+
+  }
+
+  function timer() {
+
+    if (!state.starRunning) {
+      return;
+    }
+
+    state.starTime--;
+
+    starTime.textContent =
+      state.starTime;
+
+    if (
+      state.starTime <= 0
+    ) {
+
+      stopStarGame();
+
+      starOverlay.classList.remove(
+        "hidden"
+      );
+
+      return;
+
+    }
+
+    starTimerId =
+      setTimeout(
+        timer,
+        1000
+      );
+
+  }
+
+  timer();
+
+  function animation() {
+
+    if (!state.starRunning) {
+      return;
+    }
+
+    frame();
+
+    starAnimationId =
+      requestAnimationFrame(
+        animation
+      );
+
+  }
+
+  animation();
+
+}
+
+function stopStarGame() {
+
+  state.starRunning = false;
+
+  if (
+    starAnimationId
+  ) {
 
     cancelAnimationFrame(
-      starGame.animation
+      starAnimationId
     );
 
-    starGame.animation = null;
+    starAnimationId = null;
+
   }
-}
 
-function restartStarRun() {
+  if (
+    starTimerId
+  ) {
 
-  stopStarRun();
-
-  state.star.score = 0;
-  state.star.combo = 0;
-  state.star.time = 20;
-
-  $("#starScore").textContent = "0";
-  $("#starCombo").textContent = "0";
-  $("#starTimer").textContent = "20";
-
-  starGame.stars = [];
-
-  resizeStarCanvas();
-}
-
-$("#starStart").addEventListener(
-  "click",
-  startStarRun
-);
-
-$("#starRestart").addEventListener(
-  "click",
-  restartStarRun
-);
-
-function movePlayer(clientX, clientY) {
-
-  if (!starGame.running) return;
-
-  const rect =
-    starCanvas.getBoundingClientRect();
-
-  starGame.player.x =
-    Math.max(
-      12,
-      Math.min(
-        rect.width - 12,
-        clientX - rect.left
-      )
+    clearTimeout(
+      starTimerId
     );
 
-  starGame.player.y =
-    Math.max(
-      12,
-      Math.min(
-        rect.height - 12,
-        clientY - rect.top
-      )
-    );
+    starTimerId = null;
+
+  }
+
 }
+
+starStart.addEventListener(
+  "click",
+  startStarGame
+);
+
+/*
+ * Touch control.
+ */
 
 starCanvas.addEventListener(
   "pointermove",
   event => {
 
     if (
-      event.pointerType === "mouse" &&
-      event.buttons === 0
-    ) {
-      return;
-    }
+      !state.starRunning
+    ) return;
 
-    movePlayer(
-      event.clientX,
-      event.clientY
-    );
+    const rect =
+      starCanvas.getBoundingClientRect();
+
+    const scaleX =
+      starCanvas.width /
+      rect.width;
+
+    const scaleY =
+      starCanvas.height /
+      rect.height;
+
+    starPlayer.targetX =
+      (event.clientX -
+        rect.left) *
+      scaleX;
+
+    starPlayer.targetY =
+      (event.clientY -
+        rect.top) *
+      scaleY;
+
   }
 );
+
+/*
+ * Touch start.
+ */
 
 starCanvas.addEventListener(
   "pointerdown",
   event => {
 
-    starCanvas.setPointerCapture(
-      event.pointerId
-    );
+    if (
+      !state.starRunning
+    ) return;
 
-    movePlayer(
-      event.clientX,
-      event.clientY
-    );
+    const rect =
+      starCanvas.getBoundingClientRect();
+
+    const scaleX =
+      starCanvas.width /
+      rect.width;
+
+    const scaleY =
+      starCanvas.height /
+      rect.height;
+
+    starPlayer.targetX =
+      (event.clientX -
+        rect.left) *
+      scaleX;
+
+    starPlayer.targetY =
+      (event.clientY -
+        rect.top) *
+      scaleY;
+
   }
 );
 
-window.addEventListener(
-  "resize",
-  resizeStarCanvas
+/*
+ * Keyboard fallback.
+ */
+
+document.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      !state.starRunning
+    ) return;
+
+    const amount = 35;
+
+    if (
+      event.key === "ArrowLeft"
+    ) {
+
+      starPlayer.targetX -= amount;
+
+    }
+
+    if (
+      event.key === "ArrowRight"
+    ) {
+
+      starPlayer.targetX += amount;
+
+    }
+
+    if (
+      event.key === "ArrowUp"
+    ) {
+
+      starPlayer.targetY -= amount;
+
+    }
+
+    if (
+      event.key === "ArrowDown"
+    ) {
+
+      starPlayer.targetY += amount;
+
+    }
+
+    starPlayer.targetX =
+      Math.max(
+        25,
+        Math.min(
+          695,
+          starPlayer.targetX
+        )
+      );
+
+    starPlayer.targetY =
+      Math.max(
+        25,
+        Math.min(
+          875,
+          starPlayer.targetY
+        )
+      );
+
+  }
 );
 
-resizeStarCanvas();
+resetStarGame();
 
 /* ============================================================
-   VISIBILITY PERFORMANCE
+   LOVE THREAD CANVAS
+============================================================ */
+
+const heartCanvas =
+  $("#heartCanvas");
+
+const heartCtx =
+  heartCanvas.getContext("2d");
+
+let heartAnimationRunning =
+  false;
+
+let heartStartTime =
+  0;
+
+const heartPoints = [];
+
+function buildHeartPoints() {
+
+  heartPoints.length = 0;
+
+  const count = 480;
+
+  for (
+    let i = 0;
+    i < count;
+    i++
+  ) {
+
+    const t =
+      (i / count) *
+      Math.PI * 2;
+
+    /*
+     * Parametric heart.
+     */
+    const x =
+      16 *
+      Math.pow(
+        Math.sin(t),
+        3
+      );
+
+    const y =
+      -(
+        13 * Math.cos(t) -
+        5 * Math.cos(2 * t) -
+        2 * Math.cos(3 * t) -
+        Math.cos(4 * t)
+      );
+
+    heartPoints.push({
+      x,
+      y
+    });
+
+  }
+
+}
+
+function drawHeartThread(
+  progress
+) {
+
+  const width =
+    heartCanvas.width;
+
+  const height =
+    heartCanvas.height;
+
+  heartCtx.clearRect(
+    0,
+    0,
+    width,
+    height
+  );
+
+  const centerX =
+    width / 2;
+
+  const centerY =
+    height / 2;
+
+  const scale =
+    11.5;
+
+  const count =
+    Math.floor(
+      heartPoints.length *
+      progress
+    );
+
+  heartCtx.save();
+
+  heartCtx.translate(
+    centerX,
+    centerY
+  );
+
+  /*
+   * Soft glow.
+   */
+  heartCtx.shadowBlur = 12;
+
+  heartCtx.shadowColor =
+    "rgba(150,37,67,.7)";
+
+  heartCtx.strokeStyle =
+    "rgba(137,43,66,.8)";
+
+  heartCtx.lineWidth = 1.2;
+
+  heartCtx.beginPath();
+
+  for (
+    let i = 0;
+    i < count;
+    i++
+  ) {
+
+    const point =
+      heartPoints[i];
+
+    const x =
+      point.x * scale;
+
+    const y =
+      point.y * scale;
+
+    if (
+      i === 0
+    ) {
+
+      heartCtx.moveTo(
+        x,
+        y
+      );
+
+    } else {
+
+      heartCtx.lineTo(
+        x,
+        y
+      );
+
+    }
+
+  }
+
+  heartCtx.stroke();
+
+  /*
+   * Thread crossing lines.
+   */
+  heartCtx.globalAlpha =
+    .35;
+
+  heartCtx.strokeStyle =
+    "#bd5068";
+
+  heartCtx.lineWidth = .6;
+
+  const threads =
+    Math.min(
+      35,
+      Math.floor(progress * 35)
+    );
+
+  for (
+    let i = 0;
+    i < threads;
+    i++
+  ) {
+
+    const a =
+      heartPoints[
+        Math.floor(
+          Math.random() *
+          Math.max(1, count)
+        )
+      ];
+
+    const b =
+      heartPoints[
+        Math.floor(
+          Math.random() *
+          Math.max(1, count)
+        )
+      ];
+
+    if (!a || !b) continue;
+
+    heartCtx.beginPath();
+
+    heartCtx.moveTo(
+      a.x * scale,
+      a.y * scale
+    );
+
+    heartCtx.lineTo(
+      b.x * scale,
+      b.y * scale
+    );
+
+    heartCtx.stroke();
+
+  }
+
+  heartCtx.restore();
+
+}
+
+function heartAnimation(
+  timestamp
+) {
+
+  if (!heartAnimationRunning) {
+    return;
+  }
+
+  if (!heartStartTime) {
+    heartStartTime =
+      timestamp;
+  }
+
+  const elapsed =
+    timestamp -
+    heartStartTime;
+
+  const progress =
+    Math.min(
+      elapsed / 3500,
+      1
+    );
+
+  drawHeartThread(
+    progress
+  );
+
+  if (
+    progress < 1
+  ) {
+
+    requestAnimationFrame(
+      heartAnimation
+    );
+
+  } else {
+
+    drawHeartThread(1);
+
+  }
+
+}
+
+function startHeartAnimation() {
+
+  if (
+    heartAnimationRunning
+  ) {
+    return;
+  }
+
+  heartAnimationRunning = true;
+
+  heartStartTime = 0;
+
+  requestAnimationFrame(
+    heartAnimation
+  );
+
+}
+
+buildHeartPoints();
+
+drawHeartThread(0);
+
+/* ============================================================
+   50+ DECORATIVE INSTANCES
+============================================================ */
+
+function createDecorations() {
+
+  const container =
+    $("#decorations");
+
+  const types = [
+    "dot",
+    "dot",
+    "dot",
+    "ring",
+    "square",
+    "line",
+    "cross"
+  ];
+
+  for (
+    let i = 0;
+    i < 72;
+    i++
+  ) {
+
+    const type =
+      types[
+        Math.floor(
+          Math.random() *
+          types.length
+        )
+      ];
+
+    const element =
+      document.createElement("span");
+
+    element.className =
+      `decoration ${type}`;
+
+    element.style.left =
+      `${Math.random() * 100}%`;
+
+    element.style.top =
+      `${Math.random() * 100}%`;
+
+    element.style.opacity =
+      `${.18 + Math.random() * .45}`;
+
+    element.style.transform +=
+      ` rotate(${Math.random() * 360}deg)`;
+
+    if (
+      type === "ring"
+    ) {
+
+      const size =
+        35 +
+        Math.random() * 100;
+
+      element.style.width =
+        `${size}px`;
+
+      element.style.height =
+        `${size}px`;
+
+    }
+
+    if (
+      type === "line"
+    ) {
+
+      element.style.width =
+        `${35 + Math.random() * 80}px`;
+
+      element.style.transform +=
+        ` rotate(${Math.random() * 180}deg)`;
+
+    }
+
+    container.appendChild(
+      element
+    );
+
+  }
+
+}
+
+createDecorations();
+
+/* ============================================================
+   PAGE VISIBILITY PERFORMANCE
 ============================================================ */
 
 document.addEventListener(
@@ -2134,23 +2526,37 @@ document.addEventListener(
   () => {
 
     if (
-      document.visibilityState === "hidden"
+      document.hidden
     ) {
 
       /*
-        Pause game animation while page
-        is not visible.
-      */
+       * Pause heavier canvas systems.
+       */
+      heartAnimationRunning =
+        false;
 
-      if (starGame.running) {
+      stopStarGame();
 
-        stopStarRun();
+    } else {
 
-        $("#starTimer").textContent =
-          state.star.time;
+      if (
+        state.currentScene ===
+        "thread"
+      ) {
+
+        heartAnimationRunning =
+          true;
+
+        heartStartTime = 0;
+
+        requestAnimationFrame(
+          heartAnimation
+        );
+
       }
 
     }
+
   }
 );
 
@@ -2158,108 +2564,100 @@ document.addEventListener(
    REPLAY
 ============================================================ */
 
-$("#replayButton").addEventListener(
+const replayButton =
+  $("#replayButton");
+
+replayButton.addEventListener(
   "click",
   () => {
 
-    state.currentScene = "opening";
+    state.currentScene =
+      "opening";
 
-    scenes.forEach(scene => {
-      scene.classList.remove(
-        "active",
-        "exit-left"
-      );
-    });
+    state.giftOpened =
+      false;
 
-    const opening =
-      getSceneElement("opening");
+    state.candlesOff =
+      false;
 
-    if (opening) {
-      opening.classList.add("active");
-    }
+    state.wishReleased =
+      false;
 
-    state.cakeBlown = false;
+    state.pin =
+      "";
 
-    cake.classList.remove("blown");
+    giftBox.classList.remove(
+      "opened"
+    );
+
+    candles.forEach(
+      candle => {
+        candle.classList.remove(
+          "off"
+        );
+      }
+    );
 
     candleStatus.textContent =
       "klik untuk meniup lilin";
 
-    state.math.question = 0;
-    state.math.score = 0;
+    blowButton.querySelector(
+      "span"
+    ).textContent =
+      "Make a Wish";
 
-    setupMathGame();
+    wishInput.value = "";
 
-    state.english.question = 0;
-    state.english.score = 0;
+    $$(".wish-object").forEach(
+      element => element.remove()
+    );
 
-    updateEnglishUI();
+    $$(".scene").forEach(
+      scene => {
 
-    restartStarRun();
+        scene.classList.remove(
+          "active",
+          "exit-left"
+        );
+
+      }
+    );
+
+    const opening =
+      $(`.scene[data-scene="opening"]`);
+
+    opening.classList.add(
+      "active"
+    );
 
     updateNavigation();
 
-    closeNavigation();
-
     if (
-      !state.musicPlaying
+      !audio.paused
     ) {
-      playMusic();
+
+      audio.currentTime = 0;
+
     }
+
   }
 );
 
 /* ============================================================
-   SCENE INITIALIZATION
+   INITIAL STATE
 ============================================================ */
 
-const openingScene =
-  getSceneElement("opening");
+updateNavigation();
 
-if (openingScene) {
-  openingScene.classList.add("active");
-}
-
-/* ============================================================
-   ERROR SAFETY
-============================================================ */
-
-window.addEventListener(
-  "error",
-  event => {
-
-    /*
-      Prevent accidental uncaught media errors
-      from disrupting the experience.
-    */
-
-    if (
-      event.target === birthdayAudio
-    ) {
-      musicStatus.textContent =
-        "music file unavailable";
-    }
-  },
-  true
+app.classList.add(
+  "locked"
 );
 
-/* ============================================================
-   PRELOAD FIRST PHOTOS
-============================================================ */
-
-const preloadImages = [
-  "photos/photo-01.jpg",
-  "photos/photo-02.jpg"
-];
-
-preloadImages.forEach(src => {
-
-  const image =
-    new Image();
-
-  image.src = src;
-});
-
-/* ============================================================
-   END
-============================================================ */
+/*
+ * Do not focus any input.
+ *
+ * This is intentional.
+ *
+ * The PIN is entered exclusively through
+ * the on-screen keypad.
+ */
