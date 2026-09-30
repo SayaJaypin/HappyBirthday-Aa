@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1"
+  >
+
+  <meta name="theme-color" content="#050b20">
+  <meta
+    name="description"
+    content="A private birthday experience made especially for Aa, M Gilang Ramadhan."
+  >
+
+  <title>for Aa — 1 Oktober</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- =========================================================
+       GLOBAL BACKGROUND
+  ========================================================== -->
+
+  <div id="ambient" class="ambient" aria-hidden="true">
+    <div class="ambient-orb orb-a"></div>
+    <div class="ambient-orb orb-b"></div>
+    <div class="ambient-orb orb-c"></div>
+
+    <div class="moon"></div>
+
+    <div class="stars stars-a"></div>
+    <div class="stars stars-b"></div>
+    <div class="stars stars-c"></div>
+
+    <div class="constellation constellation-a"></div>
+    <div class="constellation constellation-b"></div>
+
+    <div class="light-beam beam-a"></div>
+    <div class="light-beam beam-b"></div>
+
+    <div id="decorations"></div>
+  </div>
+
+  <!-- =========================================================
+       PIN SCREEN
+  ========================================================== -->
+
+  <section id="pinScreen" class="screen pin-screen active">
+
+    <div class="pin-card glass-card">
+
+      <div class="pin-orbit" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+      <div class="eyebrow">a little private place</div>
+
+      <h1>sebelum masuk...</h1>
+
+      <p>
+        ada satu hal kecil yang harus kamu buka dulu.
+      </p>
+
+      <label class="sr-only" for="pinInput">Masukkan PIN</label>
+
+      <div class="pin-dots" id="pinDots">
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+      </div>
+
+      <input
+        id="pinInput"
+        class="pin-input"
+        type="password"
+        inputmode="numeric"
+        maxlength="6"
+        autocomplete="off"
+        aria-label="Masukkan PIN enam digit"
+      >
+
+      <div id="pinError" class="pin-error" aria-live="polite"></div>
+
+      <button id="pinButton" class="btn btn-primary" type="button">
+        Masuk
+      </button>
+
+      <div class="pin-hint">
+        made with a little extra care
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =========================================================
+       APP
+  ========================================================== -->
+
+  <main id="app" class="app locked">
+
+    <!-- TOP BAR -->
+
+    <header class="topbar">
+
+      <button
+        id="menuButton"
+        class="icon-btn"
+        type="button"
+        aria-label="Buka navigasi"
+        aria-expanded="false"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <div class="topbar-title">
+        <span>for Aa</span>
+        <small>1 October</small>
+      </div>
+
+      <button
+        id="musicButton"
+        class="music-button"
+        type="button"
+        aria-label="Putar musik"
+      >
+        <span class="music-bars">
+          <i></i>
+          <i></i>
+          <i></i>
+          <i></i>
+        </span>
+      </button>
+
+    </header>
+
+    <!-- NAVIGATION -->
+
+    <aside id="navigation" class="navigation glass-card">
+
+      <div class="nav-header">
+        <div>
+          <small>private birthday experience</small>
+          <strong>for Aa</strong>
+        </div>
+
+        <button
+          id="closeMenu"
+          class="icon-btn close-btn"
+          type="button"
+          aria-label="Tutup navigasi"
+        >
+          ×
+        </button>
+      </div>
+
+      <nav id="navLinks">
+
+        <button data-scene="opening">Home</button>
+        <button data-scene="birthday">Birthday</button>
+        <button data-scene="gift">Gift</button>
+        <button data-scene="letter">Letter</button>
+        <button data-scene="time">Time Between Us</button>
+        <button data-scene="memory-1">Memories</button>
+        <button data-scene="thread">Love Thread</button>
+        <button data-scene="cake">Cake</button>
+        <button data-scene="wish">Wish</button>
+        <button data-scene="games">Games</button>
+        <button data-scene="finale">Finale</button>
+
+      </nav>
+
+    </aside>
+
+    <!-- MUSIC PLAYER -->
+
+    <div id="musicPlayer" class="music-player glass-card">
+
+      <div class="music-info">
+        <span class="music-status" id="musicStatus">music paused</span>
+        <strong>Shape of My Heart</strong>
+      </div>
+
+      <div class="music-controls">
+
+        <button id="playMusic" type="button" aria-label="Play">
+          play
+        </button>
+
+        <button id="pauseMusic" type="button" aria-label="Pause">
+          pause
+        </button>
+
+        <button id="muteMusic" type="button" aria-label="Mute">
+          mute
+        </button>
+
+      </div>
+
+      <div class="music-progress">
+        <span id="musicProgress"></span>
+      </div>
+
+    </div>
+
+    <!-- =======================================================
+         SCENE CONTAINER
+    ======================================================== -->
+
+    <div id="sceneContainer" class="scene-container">
+
+      <!-- =====================================================
+           01 OPENING
+      ====================================================== -->
+
+      <section
+        class="scene"
+        id="scene-opening"
+        data-scene="opening"
+      >
+
+        <div class="scene-inner hero-scene">
+
+          <div class="hero-orbit">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+
+          <div class="eyebrow reveal">
+            a small universe made for you
+          </div>
+
+          <h1 class="hero-title reveal">
+            untuk Aa,<br>
+            <em>M Gilang Ramadhan</em>
+          </h1>
+
+          <div class="hero-divider reveal">
+            <span></span>
+            <i></i>
+            <span></span>
+          </div>
+
+          <p class="hero-date reveal">
+            1 Oktober
+          </p>
+
+          <p class="hero-from reveal">
+            from Neng
+          </p>
+
+          <button
+            class="btn btn-primary scene-next reveal"
+            data-next="birthday"
+            type="button"
+          >
+            Buka Hadiahnya
+          </button>
+
+        </div>
+
+      </section>
+
+      <!-- =====================================================
+           02 BIRTHDAY
+      ====================================================== -->
+
+      <section
+        class="scene"
+        id="scene-birthday"
+        data-scene="birthday"
+      >
+
+        <div class="scene-inner">
+
+          <div class="section-kicker">01 / birthday</div>
+
+          <h2 class="section-title">
+            selamat ulang tahun,<br>
+            <em>Aa.</em>
+          </h2>
+
+          <div class="message-card glass-card">
+
+            <p>
+              Hari ini adalah hari Aa bertambah satu langkah lagi.
+              Semoga umur yang baru membawa lebih banyak hal baik,
+              lebih banyak alasan untuk tersenyum, dan lebih banyak
+              kesempatan untuk melakukan hal-hal yang Aa inginkan.
+            </p>
+
+            <p>
+              Neng juga berharap kerjaan Aa dilancarkan, kesehatan
+              selalu dijaga, dan setiap hal yang sedang Aa perjuangkan
+              pelan-pelan menemukan jalannya.
+            </p>
+
+            <p>
+              Kalau beberapa hari terasa berat, tidak apa-apa.
+              Tidak semua hal harus selesai dalam satu waktu.
+              Pelan-pelan juga tetap berarti maju.
+            </p>
+
+            <p>
+              Walaupun jarak membuat kita tidak berada di tempat yang
+              sama, perhatian tidak harus ikut jauh.
+            </p>
+
+          </div>
+
+          <div class="button-row">
+
+            <button
+              class="btn btn-ghost scene-back"
+              data-back="opening"
+              type="button"
+            >
+              Kembali
+            </button>
+
+            <button
+              class="btn btn-primary scene-next"
+              data-next="gift"
+              type="button"
+            >
+              Lanjut
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =====================================================
+           03 GIFT
+      ====================================================== -->
+
+      <section
+        class="scene"
+        id="scene-gift"
+        data-scene="gift"
+      >
+
+        <div class="scene-inner gift-scene">
+
+          <div class="section-kicker">02 / something for you</div>
+
+          <h2 class="section-title">
+            ada hadiah kecil<br>
+            <em>di sini.</em>
+          </h2>
+
+          <div
+            id="giftBox"
+            class="gift-box"
+            aria-label="Kotak hadiah interaktif"
+          >
+
+            <div class="gift-light"></div>
+
+            <div class="gift-lid">
+              <div class="gift-ribbon-horizontal"></div>
+              <div class="gift-ribbon-vertical"></div>
+            </div>
+
+            <div class="gift-body">
+              <div class="gift-ribbon-horizontal"></div>
+              <div class="gift-ribbon-vertical"></div>
+            </div>
+
+            <div class="gift-particles" id="giftParticles"></div>
+
+          </div>
+
+          <p id="giftText" class="interaction-hint">
+            tekan untuk membuka
+          </p>
+
+          <div class="button-row">
+
+            <button
+              class="btn btn-ghost scene-back"
+              data-back="birthday"
+              type="button"
+            >
+              Kembali
+            </button>
+
+            <button
+              id="openGift"
+              class="btn btn-primary"
+              type="button"
+            >
+              Buka Hadiah
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =====================================================
+           04 LETTER
+      ====================================================== -->
+
+      <section
+        class="scene"
+        id="scene-letter"
+        data-scene="letter"
+      >
+
+        <div class="scene-inner letter-scene">
+
+          <div class="section-kicker">03 / a letter</div>
+
+          <div id="letterPaper" class="letter-paper">
+
+            <div class="paper-corner corner-one"></div>
+            <div class="paper-corner corner-two"></div>
+
+            <div class="letter-content">
+
+              <div class="letter-date">1 Oktober</div>
+
+              <h2>untuk Aa</h2>
+
+              <p>
+                Aa, selamat ulang tahun.
+              </p>
+
+              <p>
+                Neng sebenarnya bingung harus mulai dari mana,
+                karena ada banyak hal yang ingin disampaikan.
+                Jadi mungkin cukup dari yang paling sederhana:
+                terima kasih sudah menjadi seseorang yang berarti
+                buat Neng.
+              </p>
+
+              <p>
+                Hubungan kita mungkin berjalan dengan cara yang
+                berbeda dari kebanyakan orang. Ada jarak, ada
+                waktu yang kadang tidak sama, ada hari-hari ketika
+                kabar tidak bisa datang sesering yang kita mau.
+                Tapi justru dari situ Neng belajar bahwa perhatian
+                tidak selalu membutuhkan kedekatan secara fisik.
+              </p>
+
+              <p>
+                Kadang sebuah chat sederhana bisa memperbaiki hari.
+                Kadang kabar singkat bisa membuat hati lebih tenang.
+                Dan kadang mengetahui bahwa ada seseorang yang
+                tetap peduli dari jauh sudah cukup untuk membuat
+                semuanya terasa sedikit lebih ringan.
+              </p>
+
+              <p>
+                Neng tahu Aa punya banyak hal yang sedang dikerjakan.
+                Jadi kalau suatu hari terasa melelahkan, jangan
+                terlalu keras sama diri sendiri. Istirahat bukan
+                berarti menyerah.
+              </p>
+
+              <p>
+                Semoga di umur yang baru ini Aa mendapatkan banyak
+                kesempatan baik. Semoga langkah Aa dipermudah,
+                pekerjaan dilancarkan, kesehatan dijaga, dan semua
+                usaha yang sedang Aa lakukan mendapatkan hasil yang
+                sepadan.
+              </p>
+
+              <p>
+                Dan kalau jarak masih menjadi bagian dari cerita kita,
+                semoga kita tetap bisa saling memberi kabar,
+                saling menyemangati, dan tetap menjadi tempat yang
+                nyaman untuk pulang lewat percakapan.
+              </p>
+
+              <p>
+                Selamat bertambah usia, Aa.
+                Jangan lupa menikmati perjalananmu juga.
+              </p>
+
+              <div class="signature">
+                <span>dengan penuh perhatian,</span>
+                <strong>Neng</strong>
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="button-row">
+
+            <button
+              class="btn btn-ghost scene-back"
+              data-back="gift"
+              type="button"
+            >
+              Kembali
+            </button>
+
+            <button
+              class="btn btn-primary scene-next"
+              data-next="time"
+              type="button"
+            >
+              Lanjut
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =====================================================
+           05 TIME
+      ====================================================== -->
+
+      <section
+        class="scene"
+        id="scene-time"
+        data-scene="time"
+      >
+
+        <div class="scene-inner">
+
+          <div class="section-kicker">04 / time between us</div>
+
+          <h2 class="section-title">
+            waktu boleh berbeda,<br>
+            <em>perhatian tetap ada.</em>
+          </h2>
+
+          <div class="clock-grid">
+
+            <article class="clock-card glass-card">
+              <span>INDONESIA</span>
+              <strong>WIB</strong>
+              <time id="clockJakarta">00:00:00</time>
+              <small id="dateJakarta">—</small>
+              <em>Asia/Jakarta</em>
+            </article>
+
+            <article class="clock-card glass-card">
+              <span>INDONESIA</span>
+              <strong>WITA</strong>
+              <time id="clockMakassar">00:00:00</time>
+              <small id="dateMakassar">—</small>
+              <em>Asia/Makassar</em>
+            </article>
+
+            <article class="clock-card glass-card">
+              <span>INDONESIA</span>
+              <strong>WIT</strong>
+              <time id="clockJayapura">00:00:00</time>
+              <small id="dateJayapura">—</small>
+              <em>Asia/Jayapura</em>
+            </article>
+
+            <article class="clock-card glass-card clock-japan">
+              <span>JAPAN</span>
+              <strong>JST</strong>
+              <time id="clockTokyo">00:00:00</time>
+              <small id="dateTokyo">—</small>
+              <em>Asia/Tokyo</em>
+            </article>
+
+          </div>
+
+          <p class="small-note">
+            real-time timezone clock — diperbarui setiap detik
+          </p>
+
+          <div class="button-row">
+
+            <button
+              class="btn btn-ghost scene-back"
+              data-back="letter"
+              type="button"
+            >
+              Kembali
+            </button>
+
+            <button
+              class="btn btn-primary scene-next"
+              data-next="memory-1"
+              type="button"
+            >
+              Lanjut
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =====================================================
+           06-13 MEMORIES
+      ====================================================== -->
+
+      <section
+        class="scene memory-scene"
+        id="scene-memory-1"
+        data-scene="memory-1"
+      >
+        <div class="scene-inner photo-scene">
+          <div class="section-kicker">05 / memories</div>
+
+          <div class="photo-frame photo-reveal">
+            <img
+              src="photos/photo-01.jpg"
+              alt="Memory 01"
+              loading="eager"
+            >
+          </div>
+
+          <div class="photo-controls">
+            <button class="btn btn-ghost scene-back" data-back="time">
+              Kembali
+            </button>
+            <button class="btn btn-primary scene-next" data-next="memory-2">
+              Lanjut
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="scene memory-scene"
+        id="scene-memory-2"
+        data-scene="memory-2"
+      >
+        <div class="scene-inner photo-scene">
+          <div class="section-kicker">06 / memories</div>
+
+          <div class="photo-frame photo-reveal">
+            <img
+              src="photos/photo-02.jpg"
+              alt="Memory 02"
+              loading="lazy"
+            >
+          </div>
+
+          <div class="photo-controls">
+            <button class="btn btn-ghost scene-back" data-back="memory-1">
+              Kembali
+            </button>
+            <button class="btn btn-primary scene-next" data-next="memory-3">
+              Lanjut
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="scene memory-scene"
+        id="scene-memory-3"
+        data-scene="memory-3"
+      >
+        <div class="scene-inner photo-scene">
+          <div class="section-kicker">07 / memories</div>
+
+          <div class="photo-frame photo-reveal">
+            <img
+              src="photos/photo-03.jpg"
+              alt="Memory 03"
+              loading="lazy"
+            >
+          </div>
+
+          <div class="photo-controls">
+            <button class="btn btn-ghost scene-back" data-back="memory-2">
+              Kembali
+            </button>
+            <button class="btn btn-primary scene-next" data-next="memory-4">
+              Lanjut
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="scene memory-scene"
+        id="scene-memory-4"
+        data-scene="memory-4"
+      >
+        <div class="scene-inner photo-scene">
+          <div class="section-kicker">08 / memories</div>
+
+          <div class="photo-frame photo-reveal">
+            <img
+              src="photos/photo-04.jpg"
+              alt="Memory 04"
+              loading="lazy"
+            >
+          </div>
+
+          <div class="photo-controls">
+            <button class="btn btn-ghost scene-back" data-back="memory-3">
+              Kembali
+            </button>
+            <button class="btn btn-primary scene-next" data-next="memory-5">
+              Lanjut
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="scene memory-scene"
+        id="scene-memory-5"
+        data-scene="memory-5"
+      >
+        <div class="scene-inner photo-scene">
+          <div class="section-kicker">09 / memories</div>
+
+          <div class="photo-frame photo-reveal">
+            <img
+              src="photos/photo-05.jpg"
+              alt="Memory 05"
+              loading="lazy"
+            >
+          </div>
+
+          <div class="photo-controls">
+            <button class="btn btn-ghost scene-back" data-back="memory-4">
+              Kembali
+            </button>
+            <button class="btn btn-primary scene-next" data-next="memory-6">
+              Lanjut
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="scene memory-scene"
+        id="scene-memory-6"
+        data-scene="memory-6"
+      >
+        <div class="scene-inner photo-scene">
+          <div class="section-kicker">10 / memories</div>
+
+          <div class="photo-frame photo-reveal">
+            <img
+              src="photos/photo-06.jpg"
+              alt="Memory 06"
+              loading="lazy"
+            >
+          </div>
+
+          <div class="photo-controls">
+            <button class="btn btn-ghost scene-back" data-back="memory-5">
+              Kembali
+            </button>
+            <button class="btn btn-primary scene-next" data-next="memory-7">
+              Lanjut
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="scene memory-scene"
+        id="scene-memory-7"
+        data-scene="memory-7"
+      >
+        <div class="scene-inner photo-scene">
+          <div class="section-kicker">11 / memories</div>
+
+          <div class="photo-frame photo-reveal">
+            <img
+              src="photos/photo-07.jpg"
+              alt="Memory 07"
+              loading="lazy"
+            >
+          </div>
+
+          <div class="photo-controls">
+            <button class="btn btn-ghost scene-back" data-back="memory-6">
+              Kembali
+            </button>
+            <button class="btn btn-primary scene-next" data-next="memory-8">
+              Lanjut
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="scene memory-scene"
+        id="scene-memory-8"
+        data-scene="memory-8"
+      >
+        <div class="scene-inner photo-scene">
+          <div class="section-kicker">12 / memories</div>
+
+          <div class="photo-frame photo-reveal">
+            <img
+              src="photos/photo-08.jpg"
+              alt="Memory 08"
+              loading="lazy"
+            >
+          </div>
+
+          <div class="photo-controls">
+            <button class="btn btn-ghost scene-back" data-back="memory-7">
+              Kembali
+            </button>
+            <button class="btn btn-primary scene-next" data-next="thread">
+              Lanjut
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================
+           LOVE THREAD
+      ====================================================== -->
+
+      <section
+        class="scene"
+        id="scene-thread"
+        data-scene="thread"
+      >
+
+        <div class="scene-inner thread-scene">
+
+          <div class="section-kicker">13 / love thread</div>
+
+          <h2 class="section-title">
+            satu benang,<br>
+            <em>satu bentuk.</em>
+          </h2>
+
+          <p class="section-description">
+            sedikit demi sedikit, semuanya membentuk sesuatu
+            yang sederhana tetapi berarti.
+          </p>
+
+          <div class="thread-stage">
+            <canvas id="heartCanvas"></canvas>
+          </div>
+
+          <div class="button-row">
+
+            <button
+              class="btn btn-ghost scene-back"
+              data-back="memory-8"
+            >
+              Kembali
+            </button>
+
+            <button
+              class="btn btn-primary scene-next"
+              data-next="cake"
+            >
+              Lanjut
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =====================================================
+           CAKE
+      ====================================================== -->
+
+      <section
+        class="scene"
+        id="scene-cake"
+        data-scene="cake"
+      >
+
+        <div class="scene-inner cake-scene">
+
+          <div class="section-kicker">14 / make a wish</div>
+
+          <h2 class="section-title">
+            satu lilin,<br>
+            <em>satu harapan.</em>
+          </h2>
+
+          <div
+            id="cake"
+            class="cake"
+            aria-label="Kue ulang tahun interaktif"
+          >
+
+            <div class="cake-candle candle-1">
+              <div class="flame"></div>
+            </div>
+
+            <div class="cake-candle candle-2">
+              <div class="flame"></div>
+            </div>
+
+            <div class="cake-candle candle-3">
+              <div class="flame"></div>
+            </div>
+
+            <div class="cake-layer cake-top">
+              <div class="frosting"></div>
+            </div>
+
+            <div class="cake-layer cake-middle">
+              <div class="frosting"></div>
+            </div>
+
+            <div class="cake-layer cake-bottom">
+              <div class="frosting"></div>
+            </div>
+
+            <div class="cake-plate"></div>
+
+            <div id="smokeContainer"></div>
+
+          </div>
+
+          <p id="candleStatus" class="interaction-hint">
+            klik untuk meniup lilin
+          </p>
+
+          <div class="button-row">
+
+            <button
+              class="btn btn-ghost scene-back"
+              data-back="thread"
+            >
+              Kembali
+            </button>
+
+            <button
+              id="blowCandles"
+              class="btn btn-primary"
+              type="button"
+            >
+              Make a Wish
+            </button>
+
+            <button
+              class="btn btn-ghost scene-next"
+              data-next="wish"
+            >
+              Lanjut
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =====================================================
+           WISH
+      ====================================================== -->
+
+      <section
+        class="scene"
+        id="scene-wish"
+        data-scene="wish"
+      >
+
+        <div class="scene-inner wish-scene">
+
+          <div class="section-kicker">15 / release a wish</div>
+
+          <h2 class="section-title">
+            tulis satu harapan<br>
+            <em>kecil untuk hari ini.</em>
+          </h2>
+
+          <div class="wish-box glass-card">
+
+            <label for="wishInput">
+              satu harapan kecil...
+            </label>
+
+            <textarea
+              id="wishInput"
+              maxlength="120"
+              placeholder="Tulis satu harapan kecil..."
+            ></textarea>
+
+            <div class="wish-footer">
+              <span id="wishCount">0 / 120</span>
+
+              <button
+                id="releaseWish"
+                class="btn btn-primary"
+                type="button"
+              >
+                Release My Wish
+              </button>
+            </div>
+
+          </div>
+
+          <div id="wishSky" class="wish-sky"></div>
+
+          <div class="button-row">
+
+            <button
+              class="btn btn-ghost scene-back"
+              data-back="cake"
+            >
+              Kembali
+            </button>
+
+            <button
+              class="btn btn-primary scene-next"
+              data-next="games"
+            >
+              Lanjut
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =====================================================
+           GAMES HUB
+      ====================================================== -->
+
+      <section
+        class="scene"
+        id="scene-games"
+        data-scene="games"
+      >
+
+        <div class="scene-inner">
+
+          <div class="section-kicker">16 / play a little</div>
+
+          <h2 class="section-title">
+            sebelum selesai,<br>
+            <em>main sebentar.</em>
+          </h2>
+
+          <div class="game-menu">
+
+            <button
+              class="game-card glass-card"
+              data-game="math"
+              type="button"
+            >
+              <span class="game-number">01</span>
+              <strong>Math</strong>
+              <small>matematika dasar</small>
+            </button>
+
+            <button
+              class="game-card glass-card"
+              data-game="star"
+              type="button"
+            >
+              <span class="game-number">02</span>
+              <strong>Star Run</strong>
+              <small>collect the stars</small>
+            </button>
+
+            <button
+              class="game-card glass-card"
+              data-game="english"
+              type="button"
+            >
+              <span class="game-number">03</span>
+              <strong>Easy English</strong>
+              <small>simple vocabulary</small>
+            </button>
+
+          </div>
+
+          <div id="gameArea" class="game-area">
+
+            <!-- MATH -->
+
+            <div id="mathGame" class="game-panel">
+
+              <div class="game-head">
+                <span>MATHEMATICS</span>
+                <strong id="mathScore">0 pts</strong>
+              </div>
+
+              <div class="question-counter">
+                <span id="mathQuestionNumber">1</span> / 5
+              </div>
+
+              <div id="mathQuestion" class="math-question">
+                2 + 2 = ?
+              </div>
+
+              <input
+                id="mathAnswer"
+                class="game-input"
+                type="number"
+                inputmode="numeric"
+                placeholder="jawaban"
+              >
+
+              <button
+                id="mathCheck"
+                class="btn btn-primary"
+                type="button"
+              >
+                Check
+              </button>
+
+              <p id="mathFeedback" class="game-feedback"></p>
+
+              <button
+                id="mathRestart"
+                class="text-button"
+                type="button"
+              >
+                restart
+              </button>
+
+            </div>
+
+            <!-- STAR RUN -->
+
+            <div id="starGame" class="game-panel">
+
+              <div class="game-head">
+                <span>STAR RUN</span>
+
+                <div>
+                  <strong id="starScore">0</strong>
+                  <small> pts</small>
+                </div>
+              </div>
+
+              <div class="star-stats">
+                <span>time <b id="starTimer">20</b></span>
+                <span>combo <b id="starCombo">0</b></span>
+              </div>
+
+              <canvas id="starCanvas"></canvas>
+
+              <button
+                id="starStart"
+                class="btn btn-primary"
+                type="button"
+              >
+                Start
+              </button>
+
+              <button
+                id="starRestart"
+                class="text-button"
+                type="button"
+              >
+                restart
+              </button>
+
+            </div>
+
+            <!-- ENGLISH -->
+
+            <div id="englishGame" class="game-panel">
+
+              <div class="game-head">
+                <span>EASY ENGLISH</span>
+                <strong id="englishScore">0 pts</strong>
+              </div>
+
+              <div class="question-counter">
+                <span id="englishQuestionNumber">1</span> / 5
+              </div>
+
+              <div
+                id="englishQuestion"
+                class="english-question"
+              >
+                happy
+              </div>
+
+              <div
+                id="englishOptions"
+                class="english-options"
+              ></div>
+
+              <p
+                id="englishFeedback"
+                class="game-feedback"
+              ></p>
+
+              <button
+                id="englishRestart"
+                class="text-button"
+                type="button"
+              >
+                restart
+              </button>
+
+            </div>
+
+          </div>
+
+          <div class="button-row">
+
+            <button
+              class="btn btn-ghost scene-back"
+              data-back="wish"
+            >
+              Kembali
+            </button>
+
+            <button
+              class="btn btn-primary scene-next"
+              data-next="finale"
+            >
+              Lanjut ke Finale
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =====================================================
+           FINALE
+      ====================================================== -->
+
+      <section
+        class="scene"
+        id="scene-finale"
+        data-scene="finale"
+      >
+
+        <div class="scene-inner finale-scene">
+
+          <div class="finale-moon"></div>
+
+          <div class="eyebrow">one last thing</div>
+
+          <h1 class="finale-title">
+            for you,<br>
+            <em>Aa.</em>
+          </h1>
+
+          <div class="finale-heart"></div>
+
+          <p class="finale-message">
+            Semoga hari ini menjadi pengingat bahwa
+            perjalanan Aa selama ini punya arti.
+            Tetap semangat untuk hari-hari berikutnya,
+            tetap jaga diri, dan jangan lupa memberi waktu
+            untuk diri sendiri.
+          </p>
+
+          <p class="finale-message">
+            Jarak mungkin membuat banyak hal terasa berbeda,
+            tapi semoga perhatian, kabar, doa, dan dukungan
+            tetap menemukan jalannya.
+          </p>
+
+          <div class="final-date">
+            <span>1 Oktober</span>
+            <strong>— Neng</strong>
+          </div>
+
+          <button
+            id="replayButton"
+            class="btn btn-primary"
+            type="button"
+          >
+            Replay
+          </button>
+
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- AUDIO -->
+
+  <audio
+    id="birthdayAudio"
+    preload="metadata"
+    loop
+    src="music/shape-of-my-heart.mp3"
+  ></audio>
+
+  <script src="script.js"></script>
+</body>
+</html>
